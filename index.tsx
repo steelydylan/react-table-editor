@@ -156,7 +156,7 @@ export class TableEditor extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props)
 
-    const row = this.parse(`<table>${props.html}</table>`);
+    const row = this.parse(props.html);
     this.state = {
       mode: null,
       showMenu: false,

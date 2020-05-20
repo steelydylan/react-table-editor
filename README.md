@@ -9,7 +9,7 @@ import * as React from 'react';
 import { TableEditor } from 'react-table-editor'
 import { render } from 'react-dom'
 
-const html = `
+const html = `<table>
   <tr>
     <th>test</th>
     <th>test</th>
@@ -25,7 +25,7 @@ const html = `
     <td>test</td>
     <td>test</td>
   </tr>
-`
+</table>`
 
 const btns = [
   {
