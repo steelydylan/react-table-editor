@@ -993,9 +993,10 @@ export class TableEditor extends React.Component<Props, State> {
       } else if (type === 'mousedown' && !isSmartPhone) {
         if (e.button !== 2 && !e.ctrlKey) {
           data.mousedown = true
+          console.log('test')
           data = this.getCurrentTags(data, a, b)
           if (!data.beingInput) {
-            if (!data.row[a].col[b].selected) {
+            if (!data.row[a].col[b].selected || points.length > 1) {
               data.row = this.unselectCells(data.row)
               data = this.select(data, a, b)
             }
@@ -1008,8 +1009,8 @@ export class TableEditor extends React.Component<Props, State> {
         }
       } else if (type === 'mouseup' && !isSmartPhone) {
         data.mousedown = false
-        const elem = this.getElementByQuery('.st-table-selected .st-table-editable') as HTMLElement
-        if (points.length > 1) {
+        if (points.length !== 1) {
+          const elem = this.getElementByQuery('.st-table-selected .st-table-editable') as HTMLElement
           this.putCaret(elem)
         }
       } else if (type === 'contextmenu') {
@@ -1993,7 +1994,8 @@ export class TableEditor extends React.Component<Props, State> {
     const { inputMode, selectedRowNo, selectedColNo, row } = this.state
     const highestRow = this.highestRow()
 
-    return (
+    return (<div className="st-table-outer">
+    <div className="st-table-inner">
       <div className="st-table-wrapper" ref={(table) =>{this.tableRef = table}}>
         {inputMode === 'table' && (
           <table className="st-table">
@@ -2112,6 +2114,8 @@ export class TableEditor extends React.Component<Props, State> {
             onInput={this.updateResult.bind(this)}
           ></textarea>
         )}
+      </div>
+      </div>
       </div>
     )
   }
