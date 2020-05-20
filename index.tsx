@@ -2128,7 +2128,7 @@ export class TableEditor extends React.Component<Props, State> {
             if (col.type === 'th') {
               return <th colSpan={col.colspan} rowSpan={col.rowspan} className={className}>{col.value}</th>
             }
-            return <th colSpan={col.colspan} rowSpan={col.rowspan} className={className}>{col.value}</th>
+            return <td colSpan={col.colspan} rowSpan={col.rowspan} className={className}>{col.value}</td>
           })}
         </tr>)
       })}
