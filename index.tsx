@@ -33,7 +33,6 @@ const defs = {
       alignLeft: <AlignLeft style={iconSize} />,
       alignCenter: <AlignCenter style={iconSize} />,
       alignRight: <AlignRight style={iconSize} />,
-      undo: <Undo style={iconSize} />,
       merge: <Merge style={iconSize} />,
       split: <Split style={iconSize} />,
       table: <span></span>,
@@ -667,10 +666,6 @@ export class TableEditor extends React.Component<Props, State> {
     } else {
       inner.style.width = 'auto'
     }
-
-    if (this.props.onChange) {
-      this.props.onChange(this.getHtml(this.state.row))
-    }
   }
 
   undo() {
@@ -815,6 +810,9 @@ export class TableEditor extends React.Component<Props, State> {
       data.history = this.generateHistory(data.row)
       return data
     });
+    if (this.props.onChange) {
+      this.props.onChange(this.getHtml(data.row))
+    }
     this.setState({
       ...data,
       showMenu: false,
@@ -873,6 +871,9 @@ export class TableEditor extends React.Component<Props, State> {
       data.history.push(produce(data.row, row => row))
       return data;
     });
+    if (this.props.onChange) {
+      this.props.onChange(this.getHtml(state.row))
+    }
     this.setState(state);
   }
 
@@ -889,7 +890,9 @@ export class TableEditor extends React.Component<Props, State> {
       }
       return data;
     });
-    this.props.onChange(this.getHtml(state.row))
+    if (this.props.onChange) {
+      this.props.onChange(this.getHtml(state.row))
+    }
     this.setState(state);
   }
 
@@ -908,7 +911,9 @@ export class TableEditor extends React.Component<Props, State> {
         }
       }
     });
-    this.props.onChange(this.getHtml(state.row))
+    if (this.props.onChange) {
+      this.props.onChange(this.getHtml(state.row))
+    }
     this.setState(state);
   }
 
@@ -993,7 +998,6 @@ export class TableEditor extends React.Component<Props, State> {
       } else if (type === 'mousedown' && !isSmartPhone) {
         if (e.button !== 2 && !e.ctrlKey) {
           data.mousedown = true
-          console.log('test')
           data = this.getCurrentTags(data, a, b)
           if (!data.beingInput) {
             if (!data.row[a].col[b].selected || points.length > 1) {
@@ -1225,6 +1229,9 @@ export class TableEditor extends React.Component<Props, State> {
       })
       return data;
     });
+    if (this.props.onChange) {
+      this.props.onChange(this.getHtml(state.row))
+    }
     this.setState({
       ...state,
       selectedRowNo: selectedno,
@@ -1268,6 +1275,9 @@ export class TableEditor extends React.Component<Props, State> {
       })
       return data;
     });
+    if (this.props.onChange) {
+      this.props.onChange(this.getHtml(state.row))
+    }
     this.setState({
       ...state,
       selectedRowNo: selectedno + 1,
@@ -1296,20 +1306,15 @@ export class TableEditor extends React.Component<Props, State> {
         targetPoints.push(point)
       }
     })
-    if (targetPoints.length === 0) {
-      const length = point1.width
-      for (let i = 0; i < length; i++) {
-        const newcell = { type: 'td', colspan: 1, rowspan: 1, value: '' }
-        newRow.push(newcell)
-      }
-      const row = produce(this.state.row, row => {
-        return this.insertRow(row, selectedColNo + 1, newRow)
-      });
-      return this.setState({
-        row
-      });
-    }
     const row = produce(this.state.row, row => {
+      if (targetPoints.length === 0) {
+        const length = point1.width
+        for (let i = 0; i < length; i++) {
+          const newcell = { type: 'td', colspan: 1, rowspan: 1, value: '' }
+          newRow.push(newcell)
+        }
+        return this.insertRow(row, selectedColNo + 1, newRow);
+      }
       targetPoints.forEach(point => {
         const index = this.getCellIndexByPos(point.x, point.y)
         const cell = this.getCellByPos(this.state.row, point.x, point.y)
@@ -1335,6 +1340,9 @@ export class TableEditor extends React.Component<Props, State> {
       })
       return this.insertRow(row, selectedColNo + 1, newRow)
     });
+    if (this.props.onChange) {
+      this.props.onChange(this.getHtml(row))
+    }
     this.setState({
       row,
       history: this.generateHistory(row)
@@ -1390,6 +1398,9 @@ export class TableEditor extends React.Component<Props, State> {
       data.row = this.insertRow(data.row, selectedno, newRow)
       data.history.push(data.row)
     });
+    if (this.props.onChange) {
+      this.props.onChange(this.getHtml(state.row))
+    }
     this.setState(state);
   }
 
@@ -1413,6 +1424,9 @@ export class TableEditor extends React.Component<Props, State> {
       cell.rowspan = point.height
       return newRow;
     });
+    if (this.props.onChange) {
+      this.props.onChange(this.getHtml(row))
+    }
     this.setState({
       showMenu: false,
       row,
@@ -1505,6 +1519,9 @@ export class TableEditor extends React.Component<Props, State> {
       data.row = this.removeCell(data.row, currentCell)
       return data;
     });
+    if (this.props.onChange) {
+      this.props.onChange(this.getHtml(state.row))
+    }
     this.setState({
       ...state,
       showMenu: false,
@@ -1526,6 +1543,9 @@ export class TableEditor extends React.Component<Props, State> {
       data.history.push(produce(data.row, row => row))
       return data;
     });
+    if (this.props.onChange) {
+      this.props.onChange(this.getHtml(state.row))
+    }
     this.setState(state);
   }
 
@@ -1541,6 +1561,9 @@ export class TableEditor extends React.Component<Props, State> {
       data.showMenu = false
       data.history.push(data.row)
     });
+    if (this.props.onChange) {
+      this.props.onChange(this.getHtml(state.row))
+    }
     this.setState(state);
   }
 
@@ -1810,6 +1833,9 @@ export class TableEditor extends React.Component<Props, State> {
       col.value = cell.querySelector('.st-table-editable').innerHTML;
       return row;
     });
+    if (this.props.onChange) {
+      this.props.onChange(this.getHtml(row))
+    }
     this.setState({
       row
     });
@@ -1844,6 +1870,9 @@ export class TableEditor extends React.Component<Props, State> {
       col.value = cell.querySelector('.st-table-editable').innerHTML;
       return row;
     });
+    if (this.props.onChange) {
+      this.props.onChange(this.getHtml(row))
+    }
     this.setState({
       row,
       openLinkModal: false,
@@ -2157,9 +2186,6 @@ export class TableEditor extends React.Component<Props, State> {
           </button>
           <button type="button" className={mark.btn.item} onClick={this.splitCell.bind(this)}>
             {mark.icon.split}
-          </button>
-          <button type="button" className={mark.btn.item} onClick={this.undo.bind(this)}>
-            {mark.icon.undo}
           </button>
         </div>
         <div className={mark.btn.group}>

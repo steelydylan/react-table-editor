@@ -1,6 +1,6 @@
 {
   "name": "react-table-editor",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
@@ -11,7 +11,7 @@
   },
   "keywords": [],
   "author": "steelydylan",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "clsx": "^1.1.0",
     "immer": "^6.0.5",
