@@ -1800,6 +1800,9 @@ export class TableEditor extends React.Component<Props, State> {
       col.value = cell.innerHTML;
       return row;
     });
+    if (this.props.onChange) {
+      this.props.onChange(this.getHtml(row))
+    }
     this.setState({ row });
   }
 
