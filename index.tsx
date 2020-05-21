@@ -1717,11 +1717,12 @@ export class TableEditor extends React.Component<Props, State> {
       }
     }
     let t = 0
+    stateRow = this.removeSelectedCellExcept(stateRow);
     rows.forEach((row) => {
       const index = row[row.length - 1]
       if (table[t]) {
         table[t].col.reverse().forEach((cell: Col) => {
-          stateRow = this.replaceCellAt(stateRow, index.row, index.col + 1, {
+          stateRow = this.insertCellAt(stateRow, index.row, index.col + 1, {
             type: 'td',
             align: 'left',
             colspan: cell.colspan,
