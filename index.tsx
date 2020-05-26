@@ -1151,10 +1151,10 @@ export class TableEditor extends React.Component<Props, State> {
     // for excel;
     const row = this.parseText(pastedData)
     if (row && row[0] && row[0].col && row[0].col.length > 1) {
-      
+      const prevRow = produce(this.state.row, row => row);
       const state = produce(this.state, (data) => {
         const selectedPoint = this.getSelectedPoint(data.row)
-        const newRow = this.insertTable(data.row, row, {
+        const newRow = this.insertTable(data.row, prevRow, row, {
           x: selectedPoint.x,
           y: selectedPoint.y,
           width: 0,
