@@ -7,10 +7,11 @@
   "scripts": {
     "dev": "webpack-dev-server --config webpack.config.js --host 0.0.0.0 --port 3031",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "tsc": "rm -rf ./lib && tsc",
-    "patch": "npm run tsc && npm version patch &&  npm publish",
-    "minor": "npm run tsc && npm version minor &&  npm publish",
-    "major": "npm run tsc && npm version minor && npm publish"
+    "clean": "rm -rf ./lib",
+    "tsc": "npm run clean && tsc",
+    "patch": "npm run tsc && npm version patch && npm publish && npm run clean",
+    "minor": "npm run tsc && npm version minor && npm publish && npm run clean",
+    "major": "npm run tsc && npm version minor && npm publish && npm run clean"
   },
   "keywords": [],
   "author": "steelydylan",
