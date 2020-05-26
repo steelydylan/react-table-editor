@@ -39,6 +39,7 @@ const defs = {
       source: <span></span>,
       td: <span>TD</span>,
       th: <span>TH</span>,
+      undo: <Undo style={iconSize} />,
     },
     label: 'st-table-label',
     actionGroup: 'st-table-action-group',
@@ -687,6 +688,7 @@ export class TableEditor extends React.Component<Props, State> {
       this.setState({
         row,
       })
+      this.forceUpdate()
     }
   }
 
@@ -2231,6 +2233,11 @@ export class TableEditor extends React.Component<Props, State> {
 
     return (
       <div className="st-table-btn-group-list">
+        <div className={mark.btn.group}>
+          <button type="button" className={mark.btn.item} onClick={this.undo.bind(this)}>
+            {mark.icon.undo}
+          </button>
+        </div>
         <div className={mark.btn.group}>
           <button type="button" className={mark.btn.item} onClick={this.mergeCells.bind(this)}>
             {mark.icon.merge}
