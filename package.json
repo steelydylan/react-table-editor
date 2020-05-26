@@ -8,9 +8,9 @@
     "dev": "webpack-dev-server --config webpack.config.js --host 0.0.0.0 --port 3031",
     "test": "echo \"Error: no test specified\" && exit 1",
     "tsc": "rm -rf ./lib && tsc",
-    "patch": "npm version patch && npm run tsc && npm publish",
-    "minor": "npm version minor && npm run tsc && npm publish",
-    "major": "npm version minor && npm run tsc && npm publish"
+    "patch": "npm run tsc && npm version patch &&  npm publish",
+    "minor": "npm run tsc && npm version minor &&  npm publish",
+    "major": "npm run tsc && npm version minor && npm publish"
   },
   "keywords": [],
   "author": "steelydylan",
