@@ -363,12 +363,12 @@ export class TableEditor extends React.Component<Props, State> {
     return row[index.row].col[index.col]
   }
 
-  hitTest(point1: Point, point2: Point) {
+  hitTest(largePoint: Point, point2: Point) {
     if (
-      point1.x < point2.x + point2.width &&
-      point2.x < point1.x + point1.width &&
-      point1.y < point2.y + point2.height &&
-      point2.y < point1.y + point1.height
+      largePoint.x < point2.x + point2.width &&
+      point2.x < largePoint.x + largePoint.width &&
+      largePoint.y < point2.y + point2.height &&
+      point2.y < largePoint.y + largePoint.height
     ) {
       return true
     }
@@ -384,7 +384,7 @@ export class TableEditor extends React.Component<Props, State> {
       return
     }
     const points = this.getSelectedPoints(data.row)
-    const point1 = this.getLargePoint(...points)
+    const largePoint = this.getLargePoint(...points)
     const row = produce(this.state.row, row => {
       row.forEach((item, i) => {
         if (!item || !item.col) {
@@ -397,16 +397,16 @@ export class TableEditor extends React.Component<Props, State> {
             return
           }
           if (obj.selected) {
-            if (point.x === point1.x) {
+            if (point.x === largePoint.x) {
               mark.left = true
             }
-            if (point.x + point.width === point1.x + point1.width) {
+            if (point.x + point.width === largePoint.x + largePoint.width) {
               mark.right = true
             }
-            if (point.y === point1.y) {
+            if (point.y === largePoint.y) {
               mark.top = true
             }
-            if (point.y + point.height === point1.y + point1.height) {
+            if (point.y + point.height === largePoint.y + largePoint.height) {
               mark.bottom = true
             }
           }
@@ -730,8 +730,8 @@ export class TableEditor extends React.Component<Props, State> {
     const newRow = produce(this.state.row, (row) => {
       const newRow = this.unselectCells(row)
       const points = this.getAllPoints(newRow)
-      const point1 = this.getLargePoint(...points)
-      const newpoint = { x: i, y: 0, width: 1, height: point1.height }
+      const largePoint = this.getLargePoint(...points)
+      const newpoint = { x: i, y: 0, width: 1, height: largePoint.height }
       const targetPoints: Point[] = []
       points.forEach(point => {
         if (this.hitTest(newpoint, point)) {
@@ -757,8 +757,8 @@ export class TableEditor extends React.Component<Props, State> {
 
   selectCol(e: CellClickEvent, i: number) {
     const points = this.getAllPoints(this.state.row)
-    const point1 = this.getLargePoint(...points)
-    const newpoint = { x: 0, y: i, width: point1.width, height: 1 }
+    const largePoint = this.getLargePoint(...points)
+    const newpoint = { x: 0, y: i, width: largePoint.width, height: 1 }
     const targetPoints: Point[] = []
     const row = produce(this.state.row, (row) => {
       const newRow = this.unselectCells(row)
@@ -788,8 +788,8 @@ export class TableEditor extends React.Component<Props, State> {
   removeCol(selectedno: number) {
     const data = produce(this.state, data => {
       const points = this.getAllPoints(data.row)
-      const point1 = this.getLargePoint.apply(null, points)
-      const newpoint = { x: selectedno, y: 0, width: 1, height: point1.height }
+      const largePoint = this.getLargePoint.apply(null, points)
+      const newpoint = { x: selectedno, y: 0, width: 1, height: largePoint.height }
       const targetPoints: Point[] = []
       points.forEach(point => {
         if (this.hitTest(newpoint, point)) {
@@ -823,9 +823,9 @@ export class TableEditor extends React.Component<Props, State> {
     const state = produce(this.state, (data) => {
       data.showMenu = false
       const points = this.getAllPoints(data.row)
-      const point1 = this.getLargePoint(...points)
-      const newpoint = { x: 0, y: selectedno, width: point1.width, height: 1 }
-      const nextpoint = { x: 0, y: selectedno + 1, width: point1.width, height: 1 }
+      const largePoint = this.getLargePoint(...points)
+      const newpoint = { x: 0, y: selectedno, width: largePoint.width, height: 1 }
+      const nextpoint = { x: 0, y: selectedno + 1, width: largePoint.width, height: 1 }
       const targetPoints = []
       const removeCells = []
       const insertCells = []
@@ -923,7 +923,13 @@ export class TableEditor extends React.Component<Props, State> {
     if (!shallowEqualObjects(currentState, nextState)) {
       return true;
     }
+    if (prevRow.length !== nextRow.length) {
+      return true;
+    }
     return prevRow.some((row, x) => {
+      if (prevRow[x].col.length !== nextRow[x].col.length) {
+        return true;
+      }
       return row.col.some((col, y) => {
         const nextCol = nextRow[x].col[y];
         const { value: nextValue, ...nextColState } = nextCol;
@@ -1112,17 +1118,23 @@ export class TableEditor extends React.Component<Props, State> {
     }
   }
 
-  processPaste(e, pastedData: string) {
+  async processPaste(e, pastedData: string) {
     e.preventDefault()
     const selectedPoint = this.getSelectedPoint(this.state.row)
     const tableHtml = pastedData.match(/<table(([\n\r\t]|.)*?)>(([\n\r\t]|.)*?)<\/table>/i)
-    const { history, row: stateRow } = this.state
     
     if (tableHtml && tableHtml[0]) {
       const newRow = this.parse(tableHtml[0], 'text')
       if (newRow && newRow.length) {
+        const prevRow = produce(this.state.row, row => row);
+        await this.addRowAndCol(newRow, {
+          x: selectedPoint.x,
+          y: selectedPoint.y,
+          width: 0,
+          height: 0,
+        });
         const state = produce(this.state, (data) => {
-          const row = this.insertTable(data.row, newRow, {
+          const row = this.insertTable(data.row, prevRow, newRow, {
             x: selectedPoint.x,
             y: selectedPoint.y,
             width: 0,
@@ -1205,8 +1217,8 @@ export class TableEditor extends React.Component<Props, State> {
   insertColRight(selectedno: number) {
     const state = produce(this.state, data => {
       const points = this.getAllPoints(data.row)
-      const point1 = this.getLargePoint(...points)
-      const newpoint = { x: selectedno, y: 0, width: 1, height: point1.height }
+      const largePoint = this.getLargePoint(...points)
+      const newpoint = { x: selectedno, y: 0, width: 1, height: largePoint.height }
       const targetPoints = []
       points.forEach(point => {
         if (this.hitTest(newpoint, point)) {
@@ -1242,8 +1254,8 @@ export class TableEditor extends React.Component<Props, State> {
 
   insertColLeft(selectedno: number) {
     const points = this.getAllPoints(this.state.row)
-    const point1 = this.getLargePoint(...points)
-    const newpoint = { x: selectedno - 1, y: 0, width: 1, height: point1.height }
+    const largePoint = this.getLargePoint(...points)
+    const newpoint = { x: selectedno - 1, y: 0, width: 1, height: largePoint.height }
     const targetPoints = []
     points.forEach(point => {
       if (this.hitTest(newpoint, point)) {
@@ -1252,7 +1264,7 @@ export class TableEditor extends React.Component<Props, State> {
     })
     const state = produce(this.state, (data) => {
       if (selectedno === 0) {
-        const length = point1.height
+        const length = largePoint.height
         for (let i = 0; i < length; i++) {
           data.row = this.insertCellAt(data.row, i, 0, this.generateNewCell())
         }
@@ -1297,8 +1309,8 @@ export class TableEditor extends React.Component<Props, State> {
       selectedColNo
     });
     const points = this.getAllPoints(this.state.row)
-    const point1 = this.getLargePoint(...points)
-    const newpoint = { x: 0, y: selectedColNo + 1, width: point1.width, height: 1 }
+    const largePoint = this.getLargePoint(...points)
+    const newpoint = { x: 0, y: selectedColNo + 1, width: largePoint.width, height: 1 }
     const targetPoints = []
     const newRow = []
     points.forEach(point => {
@@ -1308,7 +1320,7 @@ export class TableEditor extends React.Component<Props, State> {
     })
     const row = produce(this.state.row, row => {
       if (targetPoints.length === 0) {
-        const length = point1.width
+        const length = largePoint.width
         for (let i = 0; i < length; i++) {
           const newcell = { type: 'td', colspan: 1, rowspan: 1, value: '' }
           newRow.push(newcell)
@@ -1354,8 +1366,8 @@ export class TableEditor extends React.Component<Props, State> {
       data.showMenu = false
       data.selectedColNo = selectedno + 1
       const points = this.getAllPoints(data.row)
-      const point1 = this.getLargePoint(...points)
-      const newpoint = { x: 0, y: selectedno - 1, width: point1.width, height: 1 }
+      const largePoint = this.getLargePoint(...points)
+      const newpoint = { x: 0, y: selectedno - 1, width: largePoint.width, height: 1 }
       const targetPoints = []
       const newRow = []
       points.forEach(point => {
@@ -1364,7 +1376,7 @@ export class TableEditor extends React.Component<Props, State> {
         }
       })
       if (selectedno === 0) {
-        const length = point1.width
+        const length = largePoint.width
         for (let i = 0; i < length; i++) {
           const newcell = { type: 'td', colspan: 1, rowspan: 1, value: '' }
           newRow.push(newcell)
@@ -1658,13 +1670,46 @@ export class TableEditor extends React.Component<Props, State> {
     }
   }
 
-  insertTable(stateRow: Row[], table: Row[], pos: Point) {
-    const currentLength = this.getTableLength(stateRow)
+  async addRowAndCol(table: Row[], pos: Point) {
     const copiedLength = this.getTableLength(table)
-    let offsetY = pos.y + copiedLength.y - currentLength.y
+    const currentLength = this.getTableLength(this.state.row);
+    let offsetX = pos.x + copiedLength.x - currentLength.x;
+    let offsetY = pos.y + copiedLength.y - currentLength.y;
+    const length = currentLength.x;
+    const row = produce(this.state.row, (row) => {
+      while (offsetY > 0) {
+        const newRow: Col[] = [];
+        for (let i = 0; i < length; i++) {
+          const newcell = this.generateNewCell();
+          newRow.push(newcell);
+        }
+        row = this.insertRow(row, currentLength.y, newRow);
+        offsetY--;
+      }
+      if (offsetX > 0) {
+        row.forEach((item) => {
+          for (let i = 0; i < offsetX; i++) {
+            item.col.push(this.generateNewCell());
+          }
+        });
+      }
+      return row;
+    });
+    await new Promise((resolve) => {
+      this.setState({
+        row
+      }, () => {
+        requestAnimationFrame(() => {
+          resolve();
+        });
+      })
+    });
+  }
+
+  insertTable(stateRow: Row[], prevRow: Row[], table: Row[], pos: Point) {
+    const copiedLength = this.getTableLength(table)
     const targets: { row: number, col: number}[] = []
     const rows: { row: number, col: number}[][] = []
-    const prevRow = produce(stateRow, row => row);
 
     const destPos = {} as Point
     const vPos = {
@@ -1681,12 +1726,15 @@ export class TableEditor extends React.Component<Props, State> {
       }
       item.col.forEach((obj, t) => {
         const point = this.getCellInfoByIndex(t, i)
+        console.log(point)
         if (point && point.x + point.width - 1 === vPos.x && point.y + point.height - 1 === vPos.y) {
           destPos.x = t
           destPos.y = i
         }
       })
     })
+
+    console.log(destPos.x)
 
     if (typeof destPos.x === 'undefined') {
       alert(this.props.message.pasteError1)
