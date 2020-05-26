@@ -670,7 +670,7 @@ export class TableEditor extends React.Component<Props, State> {
   }
 
   undo() {
-    const history = produce(this.state.history, history => history)
+    const history = [...produce(this.state.history, history => history)]
     let row = produce(this.state.row, row => row);
     if (history.length === 0) {
       return
