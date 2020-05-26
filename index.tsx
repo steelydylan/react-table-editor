@@ -670,23 +670,23 @@ export class TableEditor extends React.Component<Props, State> {
   }
 
   undo() {
-    const data = this.state
-    let row: Row[] | undefined = data.row
-    const hist = data.history
-    if (data.history.length === 0) {
+    const history = produce(this.state.history, history => history)
+    let row = produce(this.state.row, row => row);
+    if (history.length === 0) {
       return
     }
 
-    while (JSON.stringify(row) === JSON.stringify(data.row)) {
-      row = hist.pop()
+    while (JSON.stringify(row) === JSON.stringify(this.state.row)) {
+      row = history.pop()
     }
 
     if (row) {
-      if (hist.length === 0) {
-        hist.push(produce(row, state => state))
+      if (history.length === 0) {
+        history.push(row)
       }
       this.setState({
         row,
+        history,
       })
       this.forceUpdate()
     }
