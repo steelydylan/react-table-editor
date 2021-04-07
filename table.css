@@ -137,7 +137,7 @@
 	position: fixed;
 	top: 0;
 	left: 0;
-	z-index: 999999;
+	z-index: 99999;
 	background-color: #fff;
 	border: 1px solid #cccccc;
 	color: #474747;
@@ -348,7 +348,7 @@
 
 .st-table-modal-wrap {
   position: fixed;
-  z-index: 1;
+  z-index: 9999;
   top: 0;
   left: 0;
   width: 100%;
@@ -470,13 +470,12 @@
   font-size: 14px;
   line-height: 1;
   color: #7A7676;
-  display: table-cell;
   border-left: none;
   border: 1px solid #CCC;
   font-size: 12px;
   padding: 3px 5px;
   border-radius: 3px;
-  display: table-cell;
+  display: inline-block;
   height: 28px;
   margin: 0;
   cursor: pointer;
@@ -518,14 +517,27 @@
   font-size: 14px;
   line-height: 1;
   color: #7A7676;
-  display: table-cell;
+  display: inline-block;
   border-left: none;
   border: 1px solid #CCC;
   font-size: 12px;
   padding: 3px 5px;
   border-radius: 3px;
-  display: table-cell;
   height: 28px;
   margin: 0;
   cursor: pointer;
+}
+
+.st-table-modal-cancel-btn {
+  margin-right: 10px;
+}
+
+.st-table-link-label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.st-table-modal-table .st-table-link-action {
+  padding: 10px 5px;
+  text-align: right;
 }
