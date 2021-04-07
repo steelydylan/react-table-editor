@@ -46,3 +46,8 @@ render(<TableEditor
   onChange={html => console.log(html)}
 />, document.getElementById('main'));
 ```
+
+## Special Thanks
+
+This repository was made thanks to Karakuri!!
+https://karakuri.ai/
