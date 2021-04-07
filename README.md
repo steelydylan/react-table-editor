@@ -50,4 +50,5 @@ render(<TableEditor
 ## Special Thanks
 
 This repository was made thanks to Karakuri!!
+
 https://karakuri.ai/
