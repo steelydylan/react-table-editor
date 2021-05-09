@@ -3,3 +3,9 @@ demo.tsx
 webpack.config.js
 src/*
 .gitignore
+.demo.tsx
+.dom.d.ts
+index.html
+index.tsx
+package-lock.json
+webpack.config.js
