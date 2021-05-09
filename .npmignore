@@ -1,3 +1,4 @@
 node_modules/*
 demo.tsx
 webpack.config.js
+src/*
