@@ -16,7 +16,6 @@
     "minor": "npm run tsc && npm version minor && npm publish && npm run clean",
     "major": "npm run tsc && npm version minor && npm publish && npm run clean"
   },
-  "files": ["/lib", "tsconfig.json", "README.md", "table.css", "LICENSE"],
   "keywords": [],
   "author": "steelydylan",
   "license": "MIT",
