@@ -1,17 +1,15 @@
 {
   "name": "react-table-editor",
-  "version": "1.0.15",
-  "description": "",
+  "version": "1.0.16",
+  "description": "spreadsheet like table component for react",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "scripts": {
     "start": "webpack-dev-server --config webpack.config.js --host 0.0.0.0 --port 3031",
     "test": "echo \"Warning: no test specified\"",
     "lint": "echo \"Warning: no test specified\"",
-    "clean": "rm -rf ./lib",
     "dev": "tsc -w",
     "build": "npm run clean && tsc",
-    "postinstall": "yarn build || true",
     "patch": "npm run tsc && npm version patch && npm publish && npm run clean",
     "minor": "npm run tsc && npm version minor && npm publish && npm run clean",
     "major": "npm run tsc && npm version minor && npm publish && npm run clean"
