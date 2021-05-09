@@ -1,6 +1,6 @@
 {
   "name": "react-table-editor",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
@@ -16,6 +16,7 @@
     "minor": "npm run tsc && npm version minor && npm publish && npm run clean",
     "major": "npm run tsc && npm version minor && npm publish && npm run clean"
   },
+  "files": ["/lib", "tsconfig.json", "README.md", "table.css", "LICENSE"],
   "keywords": [],
   "author": "steelydylan",
   "license": "MIT",
