@@ -2,10 +2,7 @@ import * as React from 'react'
 import { createPortal } from 'react-dom'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { shallowEqualObjects } from 'shallow-equal'
-import ReactTooltip from 'react-tooltip'
-import clsx from 'clsx'
 import produce from 'immer'
-import xss from 'xss'
 import * as util from './util'
 import AlignCenter from './icons/AlignCenter'
 import AlignLeft from './icons/AlignLeft'
@@ -13,8 +10,13 @@ import AlignRight from './icons/AlignRight'
 import Merge from './icons/Merge'
 import Split from './icons/Split'
 import Undo from './icons/Undo'
-import CellInner from './cell-inner'
 import { acquireClipboardData, acquireText, toHtml } from './clipboard'
+import { CTXMenu } from './ctx-menu'
+import { LinkModal } from './link-modal'
+import { Align, Btn, CellClickEvent, Col, Mark, Mode, Point, Row } from './types'
+import { Menu } from './menu'
+import { ResultHTML } from './result-html'
+import { Table } from './table'
 
 const iconSize = { width: '16px', height: '16px' }
 
@@ -24,33 +26,35 @@ const defs = {
   lang: 'en',
   mark: {
     align: {
-      default: 'left',
-      left: 'left',
-      center: 'center',
-      right: 'right',
+      default: 'left' as Align,
+      left: 'left' as Align,
+      center: 'center' as Align,
+      right: 'right' as Align,
     },
+  },
+  classNames: {
     btn: {
       group: 'st-table-btn-list',
       item: 'st-table-btn',
       itemActive: 'st-table-btn-active',
-    },
-    icon: {
-      alignLeft: <AlignLeft style={iconSize} />,
-      alignCenter: <AlignCenter style={iconSize} />,
-      alignRight: <AlignRight style={iconSize} />,
-      merge: <Merge style={iconSize} />,
-      split: <Split style={iconSize} />,
-      table: <span></span>,
-      source: <span></span>,
-      td: <span>TD</span>,
-      th: <span>TH</span>,
-      undo: <Undo style={iconSize} />,
     },
     label: 'st-table-label',
     actionGroup: 'st-table-action-group',
     selector: {
       self: 'st-table-selector',
     },
+  },
+  icons: {
+    alignLeft: <AlignLeft style={iconSize} />,
+    alignCenter: <AlignCenter style={iconSize} />,
+    alignRight: <AlignRight style={iconSize} />,
+    merge: <Merge style={iconSize} />,
+    split: <Split style={iconSize} />,
+    table: <span></span>,
+    source: <span></span>,
+    td: <span>TD</span>,
+    th: <span>TH</span>,
+    undo: <Undo style={iconSize} />,
   },
   message: {
     mergeCells: 'merge cell',
@@ -88,40 +92,6 @@ const defs = {
   showTargetBlankUI: false,
 }
 
-type CellClickEvent = React.MouseEvent<HTMLTableHeaderCellElement, MouseEvent> & {
-  clipboardData?: any
-}
-
-type Point = { x: number; y: number; width: number; height: number }
-
-type Align = 'right' | 'center' | 'left'
-type Mode = 'col' | 'row' | 'cell' | null
-
-type Mark = {
-  top: boolean
-  right: boolean
-  bottom: boolean
-  left: boolean
-}
-
-type Col = {
-  key: string
-  colspan: number
-  rowspan: number
-  type: 'td' | 'th'
-  value: string
-  selected: boolean
-  cellClass?: string
-  align: Align
-  mark: Mark
-  x: number
-  y: number
-}
-
-type Row = {
-  col: Col[]
-}
-
 type State = {
   mode: Mode
   showMenu: boolean
@@ -150,7 +120,7 @@ type State = {
 
 type Props = Partial<typeof defs> & {
   html: string
-  btns?: { className: string; tag: string; icon: React.ReactNode; tooltip: string }[]
+  btns?: Btn[]
   onChange?: (html: string) => void
 }
 
@@ -288,16 +258,16 @@ export class TableEditor extends React.Component<Props, State> {
     const height = parseInt(cell.getAttribute('rowspan'))
     const headers = this.getElementsByQuery('.js-table-header th')
     const sides = this.getElementsByQuery('.js-table-side')
-    ;[].forEach.call(headers, (header, index) => {
-      if (util.offset(header).left === left) {
-        returnLeft = index
-      }
-    })
-    ;[].forEach.call(sides, (side, index) => {
-      if (util.offset(side).top === top) {
-        returnTop = index
-      }
-    })
+      ;[].forEach.call(headers, (header, index) => {
+        if (util.offset(header).left === left) {
+          returnLeft = index
+        }
+      })
+      ;[].forEach.call(sides, (side, index) => {
+        if (util.offset(side).top === top) {
+          returnTop = index
+        }
+      })
     return { x: returnLeft - 1, y: returnTop, width, height }
   }
 
@@ -537,44 +507,44 @@ export class TableEditor extends React.Component<Props, State> {
     const rows: Row[] = []
     const doc = util.parseHTML(html, true)
     const trs = doc.querySelectorAll('tr')
-    ;[].forEach.call(trs, (tr: HTMLTableRowElement) => {
-      const row = {} as Row
-      const cols: Col[] = []
-      const cells = tr.querySelectorAll('th,td')
-      row.col = cols
-      ;[].forEach.call(cells, (cell: HTMLTableCellElement) => {
-        const col = {} as Col
-        const html = format === 'html' ? cell.innerHTML : cell.innerText
-        if (cell.tagName === 'TH') {
-          col.type = 'th'
-        } else {
-          col.type = 'td'
-        }
-        col.colspan = parseInt(cell.getAttribute('colspan') as string) || 1
-        col.rowspan = parseInt(cell.getAttribute('rowspan') as string) || 1
-        col.value = ''
-        if (html) {
-          col.value = html.replace(/{(.*?)}/g, '&lcub;$1&rcub;')
-          col.value = col.value.replace(/\\/g, '&#92;')
-        }
-        const classAttr = cell.getAttribute('class')
-        let cellClass = ''
-        if (classAttr) {
-          const classList = classAttr.split(/\s+/)
-          classList.forEach(item => {
-            const align = this.getAlignByStyle(item)
-            if (align) {
-              col.align = align
+      ;[].forEach.call(trs, (tr: HTMLTableRowElement) => {
+        const row = {} as Row
+        const cols: Col[] = []
+        const cells = tr.querySelectorAll('th,td')
+        row.col = cols
+          ;[].forEach.call(cells, (cell: HTMLTableCellElement) => {
+            const col = {} as Col
+            const html = format === 'html' ? cell.innerHTML : cell.innerText
+            if (cell.tagName === 'TH') {
+              col.type = 'th'
             } else {
-              cellClass += ` ${item}`
+              col.type = 'td'
             }
+            col.colspan = parseInt(cell.getAttribute('colspan') as string) || 1
+            col.rowspan = parseInt(cell.getAttribute('rowspan') as string) || 1
+            col.value = ''
+            if (html) {
+              col.value = html.replace(/{(.*?)}/g, '&lcub;$1&rcub;')
+              col.value = col.value.replace(/\\/g, '&#92;')
+            }
+            const classAttr = cell.getAttribute('class')
+            let cellClass = ''
+            if (classAttr) {
+              const classList = classAttr.split(/\s+/)
+              classList.forEach(item => {
+                const align = this.getAlignByStyle(item)
+                if (align) {
+                  col.align = align
+                } else {
+                  cellClass += ` ${item}`
+                }
+              })
+            }
+            col.cellClass = cellClass.substr(1)
+            cols.push(col)
           })
-        }
-        col.cellClass = cellClass.substr(1)
-        cols.push(col)
+        rows.push(row)
       })
-      rows.push(row)
-    })
     return rows
   }
 
@@ -612,21 +582,21 @@ export class TableEditor extends React.Component<Props, State> {
     const table = util.parseHTML(html)
     let ret = ''
     const trs = table.querySelectorAll('tr')
-    ;[].forEach.call(trs, (tr, i) => {
-      ret += '| '
-      const children = tr.querySelectorAll('td,th')
-      ;[].forEach.call(children, child => {
-        ret += child.innerHTML
-        ret += ' | '
+      ;[].forEach.call(trs, (tr, i) => {
+        ret += '| '
+        const children = tr.querySelectorAll('td,th')
+          ;[].forEach.call(children, child => {
+            ret += child.innerHTML
+            ret += ' | '
+          })
+        if (i === 0) {
+          ret += '\n| '
+            ;[].forEach.call(children, () => {
+              ret += '--- | '
+            })
+        }
+        ret += '\n'
       })
-      if (i === 0) {
-        ret += '\n| '
-        ;[].forEach.call(children, () => {
-          ret += '--- | '
-        })
-      }
-      ret += '\n'
-    })
     return ret
   }
 
@@ -1963,18 +1933,17 @@ export class TableEditor extends React.Component<Props, State> {
     })
   }
 
-  insertLink() {
+  insertLink({ linkUrl, linkLabel, linkTargetBlank }: { linkUrl: string, linkLabel: string, linkTargetBlank: boolean }) {
     const { relAttrForTargetBlank } = this.props
-    const { linkClassName, linkUrl, linkLabel, linkTargetBlank } = this.state
+    const { linkClassName } = this.state
     let classAttr = ''
     if (linkClassName) {
       classAttr = ` class="${linkClassName}"`
     }
-    const insertHtml = `<a href="${linkUrl}"${classAttr}${
-      linkTargetBlank === true
+    const insertHtml = `<a href="${linkUrl}"${classAttr}${linkTargetBlank === true
         ? ` target="_blank" rel="${relAttrForTargetBlank}"`
         : ` target="_parent" rel="${relAttrForTargetBlank}"`
-    }>${linkLabel}</a>`
+      }>${linkLabel}</a>`
 
     util.restoreSelection(this.range)
     util.replaceSelectionWithHtml(insertHtml)
@@ -1995,18 +1964,6 @@ export class TableEditor extends React.Component<Props, State> {
     })
   }
 
-  toggleTargetBlank(e: React.ChangeEvent<HTMLInputElement>) {
-    if (e.target.checked) {
-      this.setState({
-        linkTargetBlank: true,
-      })
-    } else {
-      this.setState({
-        linkTargetBlank: false,
-      })
-    }
-  }
-
   renderCtxMenu(): React.ReactPortal | null {
     const { message } = this.props
     const { showMenu, mode, selectedRowNo, selectedColNo, menuY, menuX } = this.state
@@ -2014,117 +1971,24 @@ export class TableEditor extends React.Component<Props, State> {
       return null
     }
     return createPortal(
-      <ul
-        className="st-table-menu"
-        style={{
-          top: `${menuY}px`,
-          left: `${menuX}px`,
-        }}
-      >
-        {mode === 'cell' && (
-          <>
-            <li
-              onClick={() => {
-                this.mergeCells()
-              }}
-            >
-              {message.mergeCells}
-            </li>
-            <li
-              onClick={() => {
-                this.splitCell()
-              }}
-            >
-              {message.splitCell}
-            </li>
-            <li
-              onClick={() => {
-                this.changeCellTypeTo('th')
-              }}
-            >
-              {message.changeToTh}
-            </li>
-            <li
-              onClick={() => {
-                this.changeCellTypeTo('td')
-              }}
-            >
-              {message.changeToTd}
-            </li>
-            <li
-              onClick={() => {
-                this.align('left')
-              }}
-            >
-              {message.alignLeft}
-            </li>
-            <li
-              onClick={() => {
-                this.align('center')
-              }}
-            >
-              {message.alignCenter}
-            </li>
-            <li
-              onClick={() => {
-                this.align('right')
-              }}
-            >
-              {message.alignRight}
-            </li>
-          </>
-        )}
-        {mode === 'col' && (
-          <>
-            <li
-              onClick={() => {
-                this.insertColLeft(selectedRowNo)
-              }}
-            >
-              {message.addColumnLeft}
-            </li>
-            <li
-              onClick={() => {
-                this.insertColRight(selectedRowNo)
-              }}
-            >
-              {message.addColumnRight}
-            </li>
-            <li
-              onClick={() => {
-                this.removeCol(selectedRowNo)
-              }}
-            >
-              {message.removeColumn}
-            </li>
-          </>
-        )}
-        {mode === 'row' && (
-          <>
-            <li
-              onClick={() => {
-                this.insertRowAbove(selectedColNo)
-              }}
-            >
-              {message.addRowTop}
-            </li>
-            <li
-              onClick={() => {
-                this.insertRowBelow(selectedColNo)
-              }}
-            >
-              {message.addRowBottom}
-            </li>
-            <li
-              onClick={() => {
-                this.removeRow(selectedColNo)
-              }}
-            >
-              {message.removeRow}
-            </li>
-          </>
-        )}
-      </ul>,
+      <CTXMenu
+        onAlign={this.align}
+        onChangeCellTypeTo={this.changeCellTypeTo}
+        onInsertColLeft={this.insertColLeft}
+        onInsertColRight={this.insertColRight}
+        onInsertRowAbove={this.insertRowAbove}
+        onInsertRowBelow={this.insertRowBelow}
+        onMergeCells={this.mergeCells}
+        onRemoveCol={this.removeCol}
+        onRemoveRow={this.removeRow}
+        onSplitCell={this.splitCell}
+        menuX={menuX}
+        menuY={menuY}
+        mode={mode}
+        selectedRowIndex={selectedRowNo}
+        selectedColIndex={selectedColNo}
+        message={message}
+      />,
       this.ctxMenuRef
     )
   }
@@ -2134,412 +1998,76 @@ export class TableEditor extends React.Component<Props, State> {
     const highestRow = this.highestRow()
 
     return (
-      <div className="st-table-outer">
-        <div className="st-table-inner">
-          <div
-            className="st-table-wrapper"
-            ref={table => {
-              this.tableRef = table
-            }}
-          >
-            {inputMode === 'table' && (
-              <table className="st-table">
-                <thead>
-                  <tr className="st-table-header js-table-header">
-                    <th className="st-table-first"></th>
-                    {highestRow.map((row, i) => {
-                      return (
-                        <React.Fragment key={`head-${i}`}>
-                          {i === selectedRowNo && (
-                            <th
-                              onClick={() => {
-                                this.unselect()
-                              }}
-                              className="selected"
-                            >
-                              <span className="st-table-toggle-btn"></span>
-                            </th>
-                          )}
-                          {i !== selectedRowNo && (
-                            <th
-                              onClick={e => {
-                                this.selectRow(e, i)
-                              }}
-                            >
-                              <span className="st-table-toggle-btn"></span>
-                            </th>
-                          )}
-                        </React.Fragment>
-                      )
-                    })}
-                  </tr>
-                </thead>
-                <tbody>
-                  {row.map((item, i) => {
-                    return (
-                      <tr key={`row-${i}`}>
-                        {selectedColNo !== i && (
-                          <th
-                            className="st-table-side js-table-side"
-                            onClick={e => {
-                              this.selectCol(e, i)
-                            }}
-                          >
-                            <span className="st-table-toggle-btn"></span>
-                          </th>
-                        )}
-                        {selectedColNo === i && (
-                          <th
-                            className="st-table-side js-table-side selected"
-                            onClick={() => {
-                              this.unselect()
-                            }}
-                          >
-                            <span className="st-table-toggle-btn"></span>
-                          </th>
-                        )}
-                        {row[i].col.map((col, j) => {
-                          return (
-                            <td
-                              key={`row-${i}-col-${j}-${col.key}`}
-                              colSpan={col.colspan}
-                              rowSpan={col.rowspan}
-                              onCompositionStart={this.onCompositionStart.bind(this)}
-                              onCompositionEnd={this.onCompositionEnd.bind(this)}
-                              onCopy={this.copyTable.bind(this)}
-                              onPaste={this.pasteTable.bind(this)}
-                              onContextMenu={e => {
-                                this.updateTable(e, j, i)
-                              }}
-                              onInput={e => {
-                                this.onCellInput(e as any, j, i)
-                              }}
-                              onKeyUp={e => {
-                                this.onCellKeyup(e as any, j, i)
-                              }}
-                              onClick={e => {
-                                this.updateTable(e, j, i)
-                              }}
-                              onMouseDown={e => {
-                                this.updateTable(e, j, i)
-                              }}
-                              onMouseUp={e => {
-                                this.updateTable(e, j, i)
-                              }}
-                              onMouseMove={e => {
-                                this.updateTable(e, j, i)
-                              }}
-                              className={clsx(
-                                {
-                                  'st-table-selected': col.selected,
-                                  'st-table-th': col.type === 'th',
-                                  'st-table-border-top': col.mark && col.mark.top,
-                                  'st-table-border-right': col.mark && col.mark.right,
-                                  'st-table-border-bottom': col.mark && col.mark.bottom,
-                                  'st-table-border-left': col.mark && col.mark.left,
-                                },
-                                col.cellClass
-                              )}
-                              data-cell-id={`${j}-${i}`}
-                            >
-                              <CellInner unique={col.key} align={col.align} value={col.value} />
-                            </td>
-                          )
-                        })}
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            )}
-            {inputMode === 'source' && (
-              <textarea
-                data-bind="tableResult"
-                className="st-table-textarea"
-                onInput={this.updateResult.bind(this)}
-              ></textarea>
-            )}
-          </div>
-        </div>
-      </div>
+      <Table
+        inputMode={inputMode}
+        selectedRowIndex={selectedRowNo}
+        selectedColIndex={selectedColNo}
+        rows={row}
+        topRows={highestRow}
+        onCellInput={this.onCellInput}
+        onCellKeyup={this.onCellKeyup}
+        onCompositionEnd={this.onCompositionEnd}
+        onCompositionStart={this.onCompositionStart}
+        onUnselect={this.unselect}
+        onUpdateSource={this.updateResult}
+        onSelectCol={this.selectCol}
+        onSelectRow={this.selectRow}
+        onUpdateTable={this.updateTable}
+        onCopyTable={this.copyTable}
+        onPasteTable={this.pasteTable}
+      />
     )
   }
 
   renderHTML(rows: Row[]) {
     const { tableClass } = this.state
-    const xssOption = {
-      whiteList: {
-        a: ['href', 'target', 'rel'],
-      },
-    }
+    const { align } = this.props.mark
 
-    return (
-      <table className={tableClass}>
-        <tbody>
-          {rows.map((item, rowIndex) => {
-            return (
-              <tr key={`row-${rowIndex}`}>
-                {item.col.map((col, colIndex) => {
-                  const className = clsx(this.getStyleByAlign(col.align), col.cellClass)
-                  if (col.type === 'th') {
-                    return (
-                      <th
-                        key={`col-${rowIndex}-${colIndex}`}
-                        colSpan={col.colspan}
-                        rowSpan={col.rowspan}
-                        className={className}
-                        dangerouslySetInnerHTML={{ __html: xss(col.value, xssOption) }}
-                      />
-                    )
-                  }
-                  return (
-                    <td
-                      key={`col-${rowIndex}-${colIndex}`}
-                      colSpan={col.colspan}
-                      rowSpan={col.rowspan}
-                      className={className}
-                      dangerouslySetInnerHTML={{ __html: xss(col.value, xssOption) }}
-                    />
-                  )
-                })}
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
-    )
-  }
-
-  renderMenu() {
-    const { showBtnList, mark } = this.props
-
-    if (!showBtnList) {
-      return null
-    }
-
-    return (
-      <div className="st-table-btn-group-list">
-        <div className={mark.btn.group}>
-          <button
-            type="button"
-            className={mark.btn.item}
-            onClick={this.undo.bind(this)}
-            data-tip="操作を一つ前に戻す"
-          >
-            {mark.icon.undo}
-          </button>
-        </div>
-        <div className={mark.btn.group}>
-          <button
-            type="button"
-            className={mark.btn.item}
-            onClick={this.mergeCells.bind(this)}
-            data-tip="選択したセルを結合"
-          >
-            {mark.icon.merge}
-            <ReactTooltip effect="solid" place="bottom" />
-          </button>
-          <button
-            type="button"
-            className={mark.btn.item}
-            onClick={this.splitCell.bind(this)}
-            data-tip="選択したセルを分割"
-          >
-            {mark.icon.split}
-            <ReactTooltip effect="solid" place="bottom" />
-          </button>
-        </div>
-        <div className={mark.btn.group}>
-          <button
-            type="button"
-            className={mark.btn.item}
-            onClick={this.changeCellTypeTo.bind(this, 'td')}
-            data-tip="通常のセルに変更"
-          >
-            {mark.icon.td}
-            <ReactTooltip effect="solid" place="bottom" />
-          </button>
-          <button
-            type="button"
-            className={mark.btn.item}
-            onClick={this.changeCellTypeTo.bind(this, 'th')}
-            data-tip="見出しのセルに変更"
-          >
-            {mark.icon.th}
-            <ReactTooltip effect="solid" place="bottom" />
-          </button>
-        </div>
-        <div className={mark.btn.group}>
-          <button
-            type="button"
-            className={mark.btn.item}
-            onClick={this.align.bind(this, 'left')}
-            data-tip="左揃え"
-          >
-            {mark.icon.alignLeft}
-            <ReactTooltip effect="solid" place="bottom" />
-          </button>
-          <button
-            type="button"
-            className={mark.btn.item}
-            onClick={this.align.bind(this, 'center')}
-            data-tip="中央揃え"
-          >
-            {mark.icon.alignCenter}
-            <ReactTooltip effect="solid" place="bottom" />
-          </button>
-          <button
-            type="button"
-            className={mark.btn.item}
-            onClick={this.align.bind(this, 'right')}
-            data-tip="右揃え"
-          >
-            {mark.icon.alignRight}
-            <ReactTooltip effect="solid" place="bottom" />
-          </button>
-        </div>
-        {this.props.btns && (
-          <div className={mark.btn.group}>
-            {this.props.btns.map((btn, index) => {
-              return (
-                <button
-                  key={`btn-${index}`}
-                  type="button"
-                  className={mark.btn.item}
-                  onClick={this.insertTag.bind(this, btn.tag, btn.className)}
-                  data-tip={btn.tooltip}
-                >
-                  {btn.icon}
-                  <ReactTooltip effect="solid" place="bottom" />
-                </button>
-              )
-            })}
-          </div>
-        )}
-      </div>
-    )
+    return (<ResultHTML
+      tableClass={tableClass}
+      rows={rows}
+      align={align}
+    />)
   }
 
   renderLinkModal(): React.ReactPortal {
-    const { isNewLink, linkLabel, linkTargetBlank } = this.state
+    const { isNewLink } = this.state
     const { message, showTargetBlankUI } = this.props
     return createPortal(
-      <div className="st-table-modal-wrap">
-        <div className="st-table-modal-outer">
-          <div className="st-table-modal-inner">
-            <div className="st-table-modal-content">
-              <span className="st-table-close-btn-wrap">
-                <button
-                  type="button"
-                  onClick={() => {
-                    this.setState({ openLinkModal: false })
-                  }}
-                  className="st-table-close-btn"
-                >
-                  <i className="st-table-close-btn-icon"></i>
-                </button>
-              </span>
-              {isNewLink && (
-                <h2 className="st-table-modal-title">
-                  <i className="st-table-modal-title-icon"></i>
-                  {message.addLinkTitle}
-                </h2>
-              )}
-              {!isNewLink && (
-                <h2 className="st-table-modal-title">
-                  <i className="st-table-modal-title-icon"></i>
-                  {message.updateLinkTitle}
-                </h2>
-              )}
-              <div className="st-table-modal-body">
-                <table className="st-table-modal-table">
-                  <tbody>
-                    <tr>
-                      <td>
-                        <label className="st-table-link-label">{message.linkUrl}</label>
-                        <input
-                          type="text"
-                          className="st-table-modal-input"
-                          onChange={e => {
-                            this.setState({
-                              linkUrl: e.target.value,
-                            })
-                          }}
-                        />
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <label className="st-table-link-label">{message.linkLabel}</label>
-                        <input
-                          type="text"
-                          className="st-table-modal-input"
-                          defaultValue={linkLabel}
-                          onChange={e => {
-                            this.setState({
-                              linkLabel: e.target.value,
-                            })
-                          }}
-                        />
-                      </td>
-                    </tr>
-                    {showTargetBlankUI && (
-                      <tr>
-                        <th>{message.targetBlank}</th>
-                        <td>
-                          <label>
-                            <input
-                              type="checkbox"
-                              value="true"
-                              checked={linkTargetBlank}
-                              onChange={this.toggleTargetBlank.bind(this)}
-                            />
-                            {message.targetBlankLabel}
-                          </label>
-                        </td>
-                      </tr>
-                    )}
-                    <tr>
-                      <td className="st-table-link-action">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            this.setState({ openLinkModal: false })
-                          }}
-                          className="st-table-modal-btn st-table-modal-cancel-btn"
-                        >
-                          キャンセル
-                        </button>
-                        {isNewLink && (
-                          <button
-                            type="button"
-                            onClick={this.insertLink.bind(this)}
-                            className="st-table-modal-btn"
-                          >
-                            <i className="st-table-modal-link-icon"></i>
-                            {message.addLink}
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>,
+      <LinkModal
+        isNewLink={isNewLink}
+        showTargetBlankUI={showTargetBlankUI}
+        message={message}
+        onClose={() => {
+          this.setState({
+            openLinkModal: false
+          })
+        }}
+        onInsertLink={this.insertLink}
+      />,
       this.modalRef
     )
   }
 
   render() {
     const { openLinkModal } = this.state
+    const { showBtnList, icons, classNames } = this.props
+  
     return (
       <div className="st-table-container">
         {this.renderCtxMenu()}
-        {this.renderMenu()}
         {this.renderTable()}
+        <Menu 
+          open={showBtnList}
+          classNames={classNames}
+          icons={icons}
+          onUndo={this.undo}
+          onAlign={this.align}
+          onChangeCellTypeTo={this.changeCellTypeTo}
+          onInsertTag={this.insertTag}
+          onMergeCells={this.mergeCells}
+          onSplitCell={this.splitCell}
+        />
         {openLinkModal && <div>{this.renderLinkModal()}</div>}
       </div>
     )
