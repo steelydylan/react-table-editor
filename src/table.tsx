@@ -16,8 +16,8 @@ type Props = {
   onUpdateTable: (e: CellClickEvent, i: number, j: number) => void
   onCompositionStart: () => void
   onCompositionEnd: () => void
-  onCopyTable: (e: CellClickEvent) => void
-  onPasteTable: (e: CellClickEvent) => void
+  onCopyTable: (e: React.ClipboardEvent<HTMLTableDataCellElement>) => void
+  onPasteTable: (e: React.ClipboardEvent<HTMLTableDataCellElement>) => void
   onCellInput: (e: CellClickEvent, i: number, j: number) => void
   onCellKeyup: (e: CellClickEvent, i: number, j: number) => void
 }

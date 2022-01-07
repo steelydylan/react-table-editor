@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { createPortal } from 'react-dom'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { shallowEqualObjects } from 'shallow-equal'
@@ -1972,16 +1972,16 @@ export class TableEditor extends React.Component<Props, State> {
     }
     return createPortal(
       <CTXMenu
-        onAlign={this.align}
-        onChangeCellTypeTo={this.changeCellTypeTo}
-        onInsertColLeft={this.insertColLeft}
-        onInsertColRight={this.insertColRight}
-        onInsertRowAbove={this.insertRowAbove}
-        onInsertRowBelow={this.insertRowBelow}
-        onMergeCells={this.mergeCells}
-        onRemoveCol={this.removeCol}
-        onRemoveRow={this.removeRow}
-        onSplitCell={this.splitCell}
+        onAlign={this.align.bind(this)}
+        onChangeCellTypeTo={this.changeCellTypeTo.bind(this)}
+        onInsertColLeft={this.insertColLeft.bind(this)}
+        onInsertColRight={this.insertColRight.bind(this)}
+        onInsertRowAbove={this.insertRowAbove.bind(this)}
+        onInsertRowBelow={this.insertRowBelow.bind(this)}
+        onMergeCells={this.mergeCells.bind(this)}
+        onRemoveCol={this.removeCol.bind(this)}
+        onRemoveRow={this.removeRow.bind(this)}
+        onSplitCell={this.splitCell.bind(this)}
         menuX={menuX}
         menuY={menuY}
         mode={mode}
@@ -1990,32 +1990,6 @@ export class TableEditor extends React.Component<Props, State> {
         message={message}
       />,
       this.ctxMenuRef
-    )
-  }
-
-  renderTable() {
-    const { inputMode, selectedRowNo, selectedColNo, row } = this.state
-    const highestRow = this.highestRow()
-
-    return (
-      <Table
-        inputMode={inputMode}
-        selectedRowIndex={selectedRowNo}
-        selectedColIndex={selectedColNo}
-        rows={row}
-        topRows={highestRow}
-        onCellInput={this.onCellInput}
-        onCellKeyup={this.onCellKeyup}
-        onCompositionEnd={this.onCompositionEnd}
-        onCompositionStart={this.onCompositionStart}
-        onUnselect={this.unselect}
-        onUpdateSource={this.updateResult}
-        onSelectCol={this.selectCol}
-        onSelectRow={this.selectRow}
-        onUpdateTable={this.updateTable}
-        onCopyTable={this.copyTable}
-        onPasteTable={this.pasteTable}
-      />
     )
   }
 
@@ -2050,23 +2024,42 @@ export class TableEditor extends React.Component<Props, State> {
   }
 
   render() {
-    const { openLinkModal } = this.state
+    const { openLinkModal, inputMode, selectedRowNo, selectedColNo, row } = this.state
     const { showBtnList, icons, classNames } = this.props
-  
+    const highestRow = this.highestRow()
+
     return (
       <div className="st-table-container">
-        {this.renderCtxMenu()}
-        {this.renderTable()}
         <Menu 
           open={showBtnList}
           classNames={classNames}
           icons={icons}
-          onUndo={this.undo}
-          onAlign={this.align}
-          onChangeCellTypeTo={this.changeCellTypeTo}
-          onInsertTag={this.insertTag}
-          onMergeCells={this.mergeCells}
-          onSplitCell={this.splitCell}
+          onUndo={this.undo.bind(this)}
+          onAlign={this.align.bind(this)}
+          onChangeCellTypeTo={this.changeCellTypeTo.bind(this)}
+          onInsertTag={this.insertTag.bind(this)}
+          onMergeCells={this.mergeCells.bind(this)}
+          onSplitCell={this.splitCell.bind(this)}
+        />
+        {this.renderCtxMenu()}
+        <Table
+          ref={(ref) => this.tableRef = ref}
+          inputMode={inputMode}
+          selectedRowIndex={selectedRowNo}
+          selectedColIndex={selectedColNo}
+          rows={row}
+          topRows={highestRow}
+          onCellInput={this.onCellInput.bind(this)}
+          onCellKeyup={this.onCellKeyup.bind(this)}
+          onCompositionEnd={this.onCompositionEnd.bind(this)}
+          onCompositionStart={this.onCompositionStart.bind(this)}
+          onUnselect={this.unselect.bind(this)}
+          onUpdateSource={this.updateResult.bind(this)}
+          onSelectCol={this.selectCol.bind(this)}
+          onSelectRow={this.selectRow.bind(this)}
+          onUpdateTable={this.updateTable.bind(this)}
+          onCopyTable={this.copyTable.bind(this)}
+          onPasteTable={this.pasteTable.bind(this)}
         />
         {openLinkModal && <div>{this.renderLinkModal()}</div>}
       </div>
