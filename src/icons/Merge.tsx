@@ -1,14 +1,8 @@
 import * as React from "react";
 
 const SvgMerge = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg width={1792} height={1792} viewBox="0 0 1792 1792" {...props}>
-    <title>{"merge"}</title>
-    <g id="a6e86b8f-02bd-4744-89fd-00d642cba97e" data-name="\u30E9\u30D9\u30EB">
-      <polygon points="896 0 896 633.99 960 576 960 100 1692 100 1692 1692 960 1692 960 1216 896 1158.01 896 1792 1792 1792 1792 0 896 0" />
-      <polygon points="896 0 896 633.99 832 576 832 100 100 100 100 1692 832 1692 832 1216 896 1158.01 896 1792 0 1792 0 0 896 0" />
-      <polygon points="1024 896 1384 1196 1384 596 1024 896" />
-      <polygon points="768 896 408 1196 408 596 768 896" />
-    </g>
+  <svg width="18" height="16" viewBox="0 0 18 16" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+    <path d="M2 6H0V0H8V2H2V6ZM16 14H10V16H18V10H16V14ZM2 14V10H0V16H8V14H2ZM18 0H10V2H16V6H18V0ZM5 9V11L8 8L5 5V7H0V9H5ZM13 7V5L10 8L13 11V9H18V7H13Z" fill="currentColor" />
   </svg>
 );
 

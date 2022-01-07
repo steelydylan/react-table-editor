@@ -18,7 +18,7 @@ import { Menu } from './menu'
 import { ResultHTML } from './result-html'
 import { Table } from './table'
 
-const iconSize = { width: '16px', height: '16px' }
+const iconSize = { width: '20px', height: '20px' }
 
 const defs = {
   showBtnList: true,
@@ -57,19 +57,19 @@ const defs = {
     undo: <Undo style={iconSize} />,
   },
   message: {
-    mergeCells: 'merge cell',
-    splitCell: 'split cell',
-    changeToTh: 'change to th',
-    changeToTd: 'change to td',
-    alignLeft: 'align left',
-    alignCenter: 'align center',
-    alignRight: 'align right',
-    addColumnLeft: 'insert column on the left',
-    addColumnRight: 'insert column on the right',
-    removeColumn: 'remove column',
-    addRowTop: 'insert row above',
-    addRowBottom: 'insert row below',
-    removeRow: 'remove row',
+    mergeCells: 'Merge selected cells',
+    splitCell: 'Split selected cell',
+    changeToTh: 'Change to th',
+    changeToTd: 'Change to td',
+    alignLeft: 'Align left',
+    alignCenter: 'Align center',
+    alignRight: 'Align right',
+    addColumnLeft: 'Insert a new column before',
+    addColumnRight: 'Insert a new column after',
+    removeColumn: 'Delete selected columns',
+    addRowTop: 'Insert a new row before',
+    addRowBottom: 'Insert a new row after',
+    removeRow: 'Delete selected rows',
     source: 'Source',
     mergeCellError1: 'All possible cells should be selected so to merge cells into one',
     mergeCellConfirm1:
