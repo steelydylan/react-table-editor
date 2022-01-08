@@ -232,7 +232,6 @@ export const TableEditor = ({
   })
 
   const undo = () => {
-    console.log('undo!!!')
     const newHistory = [...produce(history, history => history)]
     let newRow = produce(row, row => row)
     if (history.length === 0) {
@@ -249,12 +248,11 @@ export const TableEditor = ({
       }
       dispatch({ type: 'SET_ROW', row: newRow })
       dispatch({ type: 'SET_HISTORY', history: newHistory })
-      // this.forceUpdate()
     }
   }
 
   const unselect = () => {
-    const newRow = util.unselectCells(row)
+    const newRow = produce(row, row => util.unselectCells(row))
     dispatch({ type: 'SET_SELECTED_COL_NO', index: -1 })
     dispatch({ type: 'SET_SELECTED_ROW_NO', index: -1 })
     dispatch({ type: 'SET_MENU', showMenu: false })
@@ -262,7 +260,7 @@ export const TableEditor = ({
   }
 
   const selectRow = (e: CellClickEvent, i: number) => {
-    const newRow = produce(row, row => {
+    const newRow = produce(state.row, row => {
       const newRow = util.unselectCells(row)
       const points = getAllPoints(newRow)
       const largePoint = util.getLargePoint(...points)
@@ -285,15 +283,15 @@ export const TableEditor = ({
     dispatch({ type: 'SET_SELECTED_ROW_NO', index: i })
     dispatch({ type: 'SET_ROW', row: newRow })
     contextmenu(e)
-    // this.update()
   }
 
   const selectCol = (e: CellClickEvent, i: number) => {
-    const points = getAllPoints(row)
+    const points = getAllPoints(state.row)
     const largePoint = util.getLargePoint(...points)
     const newpoint = { x: 0, y: i, width: largePoint.width, height: 1 }
     const targetPoints: Point[] = []
-    const newRow = produce(row, row => {
+    const newRow = produce(state.row, row => {
+      console.log('aaa')
       const newRow = util.unselectCells(row)
       points.forEach(point => {
         if (util.hitTest(newpoint, point)) {
@@ -304,7 +302,7 @@ export const TableEditor = ({
         const cell = getCellByPos(newRow, point.x, point.y)
         cell.selected = true
       })
-      return row
+      return newRow
     })
 
     dispatch({ type: 'SET_MENU', showMenu: false })
