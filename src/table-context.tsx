@@ -30,7 +30,6 @@ export const TableContextComponent: React.FC<Props & Partial<DefaultProps>> = ({
     selectedRowNo,
     showMenu,
   } = state
-  console.log(state)
   const mergedProps = { ...defaultProps, ...props }
   const { message, relAttrForTargetBlank, showTargetBlankUI } = mergedProps
   const { align } = mergedProps.mark
@@ -370,7 +369,6 @@ export const TableContextComponent: React.FC<Props & Partial<DefaultProps>> = ({
       targetPoints.forEach(point => {
         const index = getCellIndexByPos(point.x, point.y)
         const cell = getCellByPos(data.row, point.x, point.y)
-        console.log(targetPoints)
         if (typeof index.row !== 'undefined' && typeof index.col !== 'undefined') {
           if (point.width + point.x - newpoint.x > 1) {
             cell.colspan = cell.colspan + 1
