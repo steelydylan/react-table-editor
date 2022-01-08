@@ -13,8 +13,6 @@ type Props = {
   onSelectCol: (e: CellClickEvent, index: number) => void
   onSelectRow: (e: CellClickEvent, index: number) => void
   onUpdateTable: (e: CellClickEvent, i: number, j: number) => void
-  onCompositionStart: () => void
-  onCompositionEnd: () => void
   onCopyTable: (e: React.ClipboardEvent<HTMLTableDataCellElement>) => void
   onPasteTable: (e: React.ClipboardEvent<HTMLTableDataCellElement>) => void
   onCellInput: (e: CellClickEvent, i: number, j: number) => void
@@ -27,8 +25,6 @@ const shouldUpdate = (prevProps: Props, newProps: Props) => {
     onUnselect,
     onSelectRow,
     onUpdateTable,
-    onCompositionStart,
-    onCompositionEnd,
     onCopyTable,
     onPasteTable,
     onCellInput,
@@ -41,13 +37,11 @@ const shouldUpdate = (prevProps: Props, newProps: Props) => {
     onUnselect: a,
     onSelectRow: b,
     onUpdateTable: c,
-    onCompositionStart: d,
-    onCompositionEnd: e,
-    onCopyTable: f,
-    onPasteTable: g,
-    onCellInput: h,
-    onCellKeyup: i,
-    onSelectCol: k,
+    onCopyTable: d,
+    onPasteTable: e,
+    onCellInput: f,
+    onCellKeyup: g,
+    onSelectCol: h,
     ...nextState
   } = newProps
   if (!shallowEqualObjects(currentState, nextState)) {
@@ -79,8 +73,6 @@ export const TableCore = React.memo(({
   onUnselect,
   onSelectRow,
   onSelectCol,
-  onCompositionStart,
-  onCompositionEnd,
   onCopyTable,
   onPasteTable,
   onUpdateTable,
@@ -146,18 +138,16 @@ export const TableCore = React.memo(({
                     key={`row-${i}-col-${j}-${col.key}`}
                     colSpan={col.colspan}
                     rowSpan={col.rowspan}
-                    onCompositionStart={onCompositionStart}
-                    onCompositionEnd={onCompositionEnd}
                     onCopy={onCopyTable}
                     onPaste={onPasteTable}
                     onContextMenu={e => {
                       onUpdateTable(e, j, i)
                     }}
                     onInput={e => {
-                      onCellInput(e as any, j, i)
+                      onCellInput(e, j, i)
                     }}
                     onKeyUp={e => {
-                      onCellKeyup(e as any, j, i)
+                      onCellKeyup(e, j, i)
                     }}
                     onClick={e => {
                       onUpdateTable(e, j, i)

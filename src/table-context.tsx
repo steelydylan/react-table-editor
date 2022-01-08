@@ -11,7 +11,6 @@ import { Btn, DefaultProps, Point, Row } from './types'
 type Action =
   { type: 'SET_MENU', showMenu: boolean } |
   { type: 'SET_SPLITED', splited: boolean } |
-  { type: 'SET_BEING_INPUT', beignInput: boolean } |
   { type: 'SET_MOUSEDOWN', mousedown: boolean } |
   { type: 'SET_POINT', point: Point } |
   { type: 'SET_SELECTED_ROW_NO', index: number } |
@@ -27,7 +26,6 @@ export type State = {
   mode: 'col' | 'row' | 'cell' | null
   showMenu: boolean
   splited: boolean
-  beingInput: boolean
   mousedown: boolean
   point: { x: number; y: number; width: number; height: number; }
   selectedRowNo: number
@@ -53,11 +51,6 @@ const reducer = (state: State, action: Action) => {
       return {
         ...state,
         count: action.splited,
-      }
-    case 'SET_BEING_INPUT':
-      return {
-        ...state,
-        beignInput: action.beignInput
       }
     case 'SET_MOUSEDOWN':
       return {
@@ -123,7 +116,6 @@ const initialState: State = {
   mode: null,
   showMenu: false,
   splited: false,
-  beingInput: false,
   mousedown: false,
   point: { x: -1, y: -1, width: 0, height: 0 },
   selectedRowNo: -1,

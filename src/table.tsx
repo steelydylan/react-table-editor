@@ -11,8 +11,6 @@ type Props = {
   onSelectCol: (e: CellClickEvent, index: number) => void
   onSelectRow: (e: CellClickEvent, index: number) => void
   onUpdateTable: (e: CellClickEvent, i: number, j: number) => void
-  onCompositionStart: () => void
-  onCompositionEnd: () => void
   onCopyTable: (e: React.ClipboardEvent<HTMLTableDataCellElement>) => void
   onPasteTable: (e: React.ClipboardEvent<HTMLTableDataCellElement>) => void
   onCellInput: (e: CellClickEvent, i: number, j: number) => void
@@ -28,8 +26,6 @@ export const Table = React.forwardRef<HTMLDivElement, Props>(({
   onSelectCol,
   onSelectRow,
   onUpdateTable,
-  onCompositionStart,
-  onCompositionEnd,
   onCopyTable,
   onPasteTable,
   onCellInput,
@@ -51,8 +47,6 @@ export const Table = React.forwardRef<HTMLDivElement, Props>(({
             onSelectCol={onSelectCol}
             onSelectRow={onSelectRow}
             onUpdateTable={onUpdateTable}
-            onCompositionStart={onCompositionStart}
-            onCompositionEnd={onCompositionEnd}
             onCopyTable={onCopyTable}
             onPasteTable={onPasteTable}
             onCellInput={onCellInput}

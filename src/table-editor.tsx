@@ -5,7 +5,7 @@ import * as util from './util'
 import { acquireClipboardData, acquireText, toHtml } from './clipboard'
 import { CTXMenu } from './ctx-menu'
 import { LinkModal } from './link-modal'
-import { Align, Btn, CellClickEvent, Col, DefaultProps, Mark, Point, Row } from './types'
+import { Align, Btn, CellClickEvent, Col, DefaultProps, Point, Row } from './types'
 import { Menu } from './menu'
 import { Table } from './table'
 import { State, TableContext } from './table-context'
@@ -203,7 +203,6 @@ export const TableEditor = ({
     return rows
   }
 
-  // TODO
   const contextmenu = (e: any) => {
     e.preventDefault()
     dispatch({ type: 'SET_MENU', showMenu: true })
@@ -214,14 +213,6 @@ export const TableEditor = ({
   useEffect(() => {
     const table = getElementByQuery('table') as HTMLTableElement
     const inner = tableRef.current.parentNode as HTMLElement
-    const elem = getElementByQuery('.st-table-selected .st-table-editable') as HTMLDivElement
-    const selectedPoints = getSelectedPoints(row)
-    if (elem && !showMenu && !linkModalState.openLinkModal && selectedPoints.length === 1) {
-      setTimeout(() => {
-        util.putCaret(elem)
-      }, 1)
-    }
-
     if (table) {
       inner.style.width = '9999px'
       const tableWidth = table.offsetWidth
@@ -291,7 +282,6 @@ export const TableEditor = ({
     const newpoint = { x: 0, y: i, width: largePoint.width, height: 1 }
     const targetPoints: Point[] = []
     const newRow = produce(state.row, row => {
-      console.log('aaa')
       const newRow = util.unselectCells(row)
       points.forEach(point => {
         if (util.hitTest(newpoint, point)) {
@@ -450,15 +440,6 @@ export const TableEditor = ({
     dispatch({ type: 'SET_HISTORY', history: newState.history })
   }
 
-  const onCompositionStart = () => {
-    dispatch({ type: 'SET_BEING_INPUT', beignInput: true })
-  }
-
-  const onCompositionEnd = () =>{
-    dispatch({ type: 'SET_BEING_INPUT', beignInput: false })
-
-  }
-
   const getCurrentTags = (data: State) => {
     const tags: { tag: string; className: string }[] = []
     const target = util.getSelectionNode()
@@ -514,11 +495,9 @@ export const TableEditor = ({
         if (e.button !== 2 && !e.ctrlKey) {
           data.mousedown = true
           data = getCurrentTags(data)
-          if (!data.beingInput) {
-            if (!data.row[a].col[b].selected || points.length > 1) {
-              data.row = util.unselectCells(data.row)
-              data = util.select(data, a, b)
-            }
+          if (!data.row[a].col[b].selected || points.length > 1) {
+            data.row = util.unselectCells(data.row)
+            data = util.select(data, a, b)
           }
         }
       } else if (type === 'mousemove' && !isSmartPhone) {
@@ -542,9 +521,7 @@ export const TableEditor = ({
         data.menuY = e.clientY
       } else if (type === 'touchstart') {
         if (points.length !== 1 || !data.row[a].col[b].selected) {
-          if (!data.beingInput) {
-            util.select(data, a, b)
-          }
+          util.select(data, a, b)
         } // todo
       }
       return data
@@ -678,7 +655,8 @@ export const TableEditor = ({
         if (onChange) {
           onChange(util.getHtml(state.row, align))
         }
-        // this.setState(state)
+        dispatch({ type: 'SET_ROW', row: newState.row })
+        dispatch({ type: 'SET_HISTORY', history: newState.history })
         return true
       }
     }
@@ -1086,7 +1064,7 @@ export const TableEditor = ({
     dispatch({ type: "SET_HISTORY", history: generateHistory(newState.row) })
   }
 
-  const addRowAndCol = async(oldRows: Row[], points: Point) => {
+  const addRowAndCol = async (oldRows: Row[], points: Point) => {
     const copiedLength = util.getTableLength(oldRows)
     const currentLength = util.getTableLength(state.row)
     const offsetX = points.x + copiedLength.x - currentLength.x
@@ -1425,8 +1403,6 @@ export const TableEditor = ({
         topRows={util.getHighestRow(state.row[0])}
         onCellInput={onCellInput}
         onCellKeyup={onCellKeyup}
-        onCompositionEnd={onCompositionEnd}
-        onCompositionStart={onCompositionStart}
         onUnselect={unselect}
         onSelectCol={selectCol}
         onSelectRow={selectRow}
