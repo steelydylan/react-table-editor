@@ -1369,6 +1369,7 @@ export const TableEditor = ({
       <LinkModal
         isNewLink={linkModalState.isNewLink}
         showTargetBlankUI={showTargetBlankUI}
+        linkLabel={linkModalState.linkLabel}
         message={message}
         onClose={() => {
           setLinkModalState({

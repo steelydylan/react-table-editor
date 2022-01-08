@@ -1,10 +1,12 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 
 type Props = {
   onClose: () => void
   isNewLink: boolean
   showTargetBlankUI: boolean
   onInsertLink: (props: { linkUrl: string, linkLabel: string, linkTargetBlank: boolean }) => void
+  linkUrl: string
+  linkLabel: string
   message: {
     addLinkTitle: string
     updateLinkTitle: string
@@ -22,10 +24,16 @@ export const LinkModal: React.FC<Props> = ({
   showTargetBlankUI,
   message,
   onInsertLink,
+  linkLabel: defaultLinkLabel,
 }) => {
   const [linkUrl, setLinkUrl] = useState('')
   const [linkLabel, setLinkLabel] = useState('')
   const [linkTargetBlank, setLinkTargetBlank] = useState(false)
+
+  useEffect(() => {
+    setLinkLabel(defaultLinkLabel)
+  }, [defaultLinkLabel])
+
   const handleToggleTargetBlank = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
       setLinkTargetBlank(true)
