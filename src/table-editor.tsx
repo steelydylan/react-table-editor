@@ -232,6 +232,7 @@ export const TableEditor = ({
   })
 
   const undo = () => {
+    console.log('undo!!!')
     const newHistory = [...produce(history, history => history)]
     let newRow = produce(row, row => row)
     if (history.length === 0) {
@@ -239,7 +240,7 @@ export const TableEditor = ({
     }
 
     while (JSON.stringify(newRow) === JSON.stringify(row)) {
-      newRow = history.pop()
+      newRow = newHistory.pop()
     }
 
     if (newRow) {
