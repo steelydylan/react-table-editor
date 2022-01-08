@@ -762,11 +762,6 @@ export const TableEditor = ({
     dispatch({ type: 'SET_HISTORY', history: util.generateHistory(history, newState.row) })
   }
 
-  // beforeUpdated() {
-  //   this.changeSelectOption()
-  //   this.markup()
-  // }
-
   const insertRowBelow = (selectedColNo: number) => {
     dispatch({ type: 'SET_MENU', showMenu: false })
     dispatch({ type: 'SET_SELECTED_COL_NO', index: selectedColNo })
@@ -1023,7 +1018,6 @@ export const TableEditor = ({
           }
         })
       })
-      data.history.push(produce(data.row, row => row))
       return data
     })
     if (onChange) {
@@ -1043,7 +1037,6 @@ export const TableEditor = ({
           }
         })
       })
-      data.showMenu = false
     })
     if (onChange) {
       onChange(util.getHtml(newState.row, align))
@@ -1083,16 +1076,6 @@ export const TableEditor = ({
       requestAnimationFrame(() => {
         resolve()
       })
-      // this.setState(
-      //   {
-      //     row: rows,
-      //   },
-      //   () => {
-      //     requestAnimationFrame(() => {
-      //       resolve()
-      //     })
-      //   }
-      // )
     })
   }
 
