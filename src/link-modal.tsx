@@ -5,7 +5,6 @@ type Props = {
   isNewLink: boolean
   showTargetBlankUI: boolean
   onInsertLink: (props: { linkUrl: string, linkLabel: string, linkTargetBlank: boolean }) => void
-  linkUrl: string
   linkLabel: string
   message: {
     addLinkTitle: string
