@@ -26,17 +26,17 @@ export const Table = React.forwardRef<HTMLDivElement, Props>(({
   onCellInput,
   onCellKeyup,
 }, ref) => {
-  const { unselect, selectCol, selectRow, state, contextmenu } = useContext(TableContext)
-  const handleSelectCol = React.useCallback((e: CellClickEvent, index: number) => {
+  const { unselect, selectCol, selectRow, contextmenu } = useContext(TableContext)
+  const handleSelectCol = (e: CellClickEvent, index: number) => {
     e.preventDefault()
     contextmenu(e.clientX, e.clientY)
     selectCol(index)
-  }, [selectCol])
-  const handleSelectRow = React.useCallback((e: CellClickEvent, index: number) => {
+  }
+  const handleSelectRow = (e: CellClickEvent, index: number) => {
     e.preventDefault()
     contextmenu(e.clientX, e.clientY)
     selectRow(index)
-  }, [selectRow])
+  }
 
   return (
     <div className="st-table-outer">

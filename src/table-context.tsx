@@ -30,6 +30,7 @@ export const TableContextComponent: React.FC<Props & Partial<DefaultProps>> = ({
     selectedRowNo,
     showMenu,
   } = state
+  console.log(state)
   const mergedProps = { ...defaultProps, ...props }
   const { message, relAttrForTargetBlank, showTargetBlankUI } = mergedProps
   const { align } = mergedProps.mark
@@ -220,12 +221,10 @@ export const TableContextComponent: React.FC<Props & Partial<DefaultProps>> = ({
       })
       return newRow
     })
-    dispatch({ type: 'SET_MENU', showMenu: false })
     dispatch({ type: 'SET_MODE', mode: 'col' })
     dispatch({ type: 'SET_SELECTED_COL_NO', index: -1 })
     dispatch({ type: 'SET_SELECTED_ROW_NO', index: i })
     dispatch({ type: 'SET_ROW', row: newRow })
-    // contextmenu(e)
   }
 
   // 列を選択する
@@ -248,12 +247,10 @@ export const TableContextComponent: React.FC<Props & Partial<DefaultProps>> = ({
       return newRow
     })
 
-    dispatch({ type: 'SET_MENU', showMenu: false })
     dispatch({ type: 'SET_MODE', mode: 'row' })
     dispatch({ type: 'SET_SELECTED_ROW_NO', index: -1 })
     dispatch({ type: 'SET_SELECTED_COL_NO', index: i })
     dispatch({ type: 'SET_ROW', row: newRow })
-    // contextmenu(e)
   }
 
   // 列を削除する
@@ -287,7 +284,6 @@ export const TableContextComponent: React.FC<Props & Partial<DefaultProps>> = ({
     }
     dispatch({ type: 'SET_ROW', row: data.row })
     dispatch({ type: 'SET_HISTORY', history: data.history })
-    dispatch({ type: 'SET_MENU', showMenu: false })
   }
 
   // 行を削除する
@@ -851,7 +847,7 @@ export const TableContextComponent: React.FC<Props & Partial<DefaultProps>> = ({
   // コンテキストメニュー表示
   const contextmenu = (x: number, y: number) => {
     dispatch({ type: 'SET_MENU', showMenu: true })
-    dispatch({ type: 'SET_MENU_X', menuX: x }) // e.clientX
+    dispatch({ type: 'SET_MENU_X', menuX: x })
     dispatch({ type: 'SET_MENU_Y', menuY: y })
   }
 
