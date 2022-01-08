@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { TableEditor } from './src'
 import { render } from 'react-dom'
-import { TableContext } from './src/table-context';
+import { TableContext } from './src';
 
 const html = `<table>
   <tr>

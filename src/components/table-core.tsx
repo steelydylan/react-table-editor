@@ -2,7 +2,7 @@ import clsx from "clsx"
 import React from "react"
 import { shallowEqualObjects } from 'shallow-equal'
 import CellInner from "./cell-inner"
-import { CellClickEvent, Row } from "./types"
+import { CellClickEvent, Row } from "../types"
 
 type Props = {
   topRows: number[]

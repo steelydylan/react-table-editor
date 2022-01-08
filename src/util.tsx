@@ -1,7 +1,7 @@
 import produce from "immer"
 import React from "react"
 import { renderToStaticMarkup } from "react-dom/server"
-import { ResultHTML } from "./result-html"
+import { ResultHTML } from "./components/result-html"
 import { State } from "./types"
 import { Align, Col, Point, Row, Tag } from "./types"
 

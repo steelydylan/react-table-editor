@@ -1,11 +1,11 @@
 import React from "react"
-import SvgAlignCenter from "./icons/AlignCenter"
-import SvgAlignLeft from "./icons/AlignLeft"
-import SvgAlignRight from "./icons/AlignRight"
-import SvgMerge from "./icons/Merge"
-import SvgSplit from "./icons/Split"
-import SvgUndo from "./icons/Undo"
-import { DefaultProps } from "./types"
+import SvgAlignCenter from "../icons/AlignCenter"
+import SvgAlignLeft from "../icons/AlignLeft"
+import SvgAlignRight from "../icons/AlignRight"
+import SvgMerge from "../icons/Merge"
+import SvgSplit from "../icons/Split"
+import SvgUndo from "../icons/Undo"
+import { DefaultProps } from "../types"
 
 const iconSize = { width: '20px', height: '20px' }
 

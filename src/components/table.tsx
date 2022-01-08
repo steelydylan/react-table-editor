@@ -1,7 +1,7 @@
 import React, { useContext } from "react"
 import { TableContext } from "./table-context"
 import { TableCore } from "./table-core"
-import { CellClickEvent, Row } from "./types"
+import { CellClickEvent, Row } from "../types"
 
 type Props = {
   topRows: number[]

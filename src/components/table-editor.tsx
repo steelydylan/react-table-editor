@@ -1,9 +1,9 @@
 import React, { useContext, useRef } from 'react'
 import produce from 'immer'
-import * as util from './util'
-import { acquireClipboardData, acquireText, toHtml } from './clipboard'
-import { Btn, CellClickEvent, Col, DefaultProps, Point, Row, State } from './types'
-import { Menu } from './menu'
+import * as util from '../util'
+import { acquireClipboardData, acquireText, toHtml } from '../clipboard'
+import { Btn, CellClickEvent, Col, DefaultProps, Point, Row, State } from '../types'
+import { Menu } from '../menu'
 import { Table } from './table'
 import { TableContext } from './table-context'
 

@@ -1,7 +1,7 @@
 import React, { useContext } from "react"
 import ReactTooltip from "react-tooltip"
 import { TableContext } from "./table-context"
-import { Btn } from "./types"
+import { Btn } from "../types"
 
 type Props = {
   classNames: {
