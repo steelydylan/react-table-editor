@@ -1,4 +1,5 @@
-import React from "react"
+import React, { useContext } from "react"
+import { TableContext } from "./table-context"
 import { TableCore } from "./table-core"
 import { CellClickEvent, Row } from "./types"
 
@@ -7,12 +8,9 @@ type Props = {
   rows: Row[]
   selectedRowIndex: number
   selectedColIndex: number
-  onUnselect: () => void
-  onSelectCol: (e: CellClickEvent, index: number) => void
-  onSelectRow: (e: CellClickEvent, index: number) => void
   onUpdateTable: (e: CellClickEvent, i: number, j: number) => void
-  onCopyTable: (e: React.ClipboardEvent<HTMLTableDataCellElement>) => void
-  onPasteTable: (e: React.ClipboardEvent<HTMLTableDataCellElement>) => void
+  onCopyTable: (e: React.ClipboardEvent<HTMLTableCellElement>) => void
+  onPasteTable: (e: React.ClipboardEvent<HTMLTableCellElement>) => void
   onCellInput: (e: CellClickEvent, i: number, j: number) => void
   onCellKeyup: (e: CellClickEvent, i: number, j: number) => void
 }
@@ -22,15 +20,24 @@ export const Table = React.forwardRef<HTMLDivElement, Props>(({
   rows,
   selectedRowIndex,
   selectedColIndex,
-  onUnselect,
-  onSelectCol,
-  onSelectRow,
   onUpdateTable,
   onCopyTable,
   onPasteTable,
   onCellInput,
   onCellKeyup,
 }, ref) => {
+  const { unselect, selectCol, selectRow, state, contextmenu } = useContext(TableContext)
+  const handleSelectCol = React.useCallback((e: CellClickEvent, index: number) => {
+    e.preventDefault()
+    contextmenu(e.clientX, e.clientY)
+    selectCol(index)
+  }, [selectCol])
+  const handleSelectRow = React.useCallback((e: CellClickEvent, index: number) => {
+    e.preventDefault()
+    contextmenu(e.clientX, e.clientY)
+    selectRow(index)
+  }, [selectRow])
+
   return (
     <div className="st-table-outer">
       <div className="st-table-inner">
@@ -43,9 +50,9 @@ export const Table = React.forwardRef<HTMLDivElement, Props>(({
             rows={rows}
             selectedRowIndex={selectedRowIndex}
             selectedColIndex={selectedColIndex}
-            onUnselect={onUnselect}
-            onSelectCol={onSelectCol}
-            onSelectRow={onSelectRow}
+            onUnselect={unselect}
+            onSelectCol={handleSelectCol}
+            onSelectRow={handleSelectRow}
             onUpdateTable={onUpdateTable}
             onCopyTable={onCopyTable}
             onPasteTable={onPasteTable}

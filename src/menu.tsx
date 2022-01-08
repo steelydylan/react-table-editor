@@ -1,5 +1,6 @@
-import React from "react"
+import React, { useContext } from "react"
 import ReactTooltip from "react-tooltip"
+import { TableContext } from "./table-context"
 import { Btn } from "./types"
 
 type Props = {
@@ -21,12 +22,6 @@ type Props = {
   }
   btns?: Btn[]
   open: boolean
-  onUndo: () => void
-  onMergeCells: () => void
-  onSplitCell: () => void
-  onAlign: (align: 'left' | 'center' | 'right') => void
-  onChangeCellTypeTo: (cell: 'td' | 'th') => void
-  onInsertTag: (tagName: string, className: string) => void
 }
 
 export const Menu: React.FC<Props> = ({ 
@@ -34,13 +29,8 @@ export const Menu: React.FC<Props> = ({
   icons, 
   btns, 
   open,
-  onUndo,
-  onMergeCells,
-  onSplitCell,
-  onAlign,
-  onChangeCellTypeTo,
-  onInsertTag,
 }) => {
+  const { undo, mergeCells, splitCell, changeCellTypeTo, alignCell, insertTag } = useContext(TableContext)
   if (!open) {
     return null
   }
@@ -50,7 +40,7 @@ export const Menu: React.FC<Props> = ({
         <button
           type="button"
           className={classNames.btn.item}
-          onClick={onUndo}
+          onClick={undo}
           data-tip="操作を一つ前に戻す"
         >
           {icons.undo}
@@ -60,7 +50,7 @@ export const Menu: React.FC<Props> = ({
         <button
           type="button"
           className={classNames.btn.item}
-          onClick={onMergeCells}
+          onClick={mergeCells}
           data-tip="選択したセルを結合"
         >
           {icons.merge}
@@ -69,7 +59,7 @@ export const Menu: React.FC<Props> = ({
         <button
           type="button"
           className={classNames.btn.item}
-          onClick={onSplitCell}
+          onClick={splitCell}
           data-tip="選択したセルを分割"
         >
           {icons.split}
@@ -80,7 +70,7 @@ export const Menu: React.FC<Props> = ({
         <button
           type="button"
           className={classNames.btn.item}
-          onClick={() => onChangeCellTypeTo('td')}
+          onClick={() => changeCellTypeTo('td')}
           data-tip="通常のセルに変更"
         >
           {icons.td}
@@ -89,7 +79,7 @@ export const Menu: React.FC<Props> = ({
         <button
           type="button"
           className={classNames.btn.item}
-          onClick={() => onChangeCellTypeTo('th')}
+          onClick={() => changeCellTypeTo('th')}
           data-tip="見出しのセルに変更"
         >
           {icons.th}
@@ -100,7 +90,7 @@ export const Menu: React.FC<Props> = ({
         <button
           type="button"
           className={classNames.btn.item}
-          onClick={() => onAlign('left')}
+          onClick={() => alignCell('left')}
           data-tip="左揃え"
         >
           {icons.alignLeft}
@@ -109,7 +99,7 @@ export const Menu: React.FC<Props> = ({
         <button
           type="button"
           className={classNames.btn.item}
-          onClick={() => onAlign('center')}
+          onClick={() => alignCell('center')}
           data-tip="中央揃え"
         >
           {icons.alignCenter}
@@ -118,7 +108,7 @@ export const Menu: React.FC<Props> = ({
         <button
           type="button"
           className={classNames.btn.item}
-          onClick={() => onAlign('right')}
+          onClick={() => alignCell('right')}
           data-tip="右揃え"
         >
           {icons.alignRight}
@@ -133,7 +123,7 @@ export const Menu: React.FC<Props> = ({
                 key={`btn-${index}`}
                 type="button"
                 className={classNames.btn.item}
-                onClick={() => onInsertTag(btn.tag, btn.className)}
+                onClick={() => insertTag(btn.tag, btn.className)}
                 data-tip={btn.tooltip}
               >
                 {btn.icon}

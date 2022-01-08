@@ -1,19 +1,10 @@
-import React from "react"
+import React, { useContext } from "react"
+import { TableContext } from "./table-context"
 
 type Props = {
   menuY: number;
   menuX: number;
   mode: 'col' | 'cell' | 'row'
-  onMergeCells: () => void
-  onSplitCell: () => void
-  onChangeCellTypeTo: (item: 'td' | 'th') => void
-  onAlign: (align: 'left' | 'center' | 'right') => void
-  onInsertColLeft: (index: number) => void
-  onInsertColRight: (index: number) => void
-  onRemoveCol: (index: number) => void
-  onInsertRowAbove: (index: number) => void
-  onInsertRowBelow: (index: number) => void
-  onRemoveRow: (index: number) => void
   selectedRowIndex: number
   selectedColIndex: number
   message: {
@@ -33,24 +24,27 @@ type Props = {
   }
 }
 
-export const CTXMenu: React.FC<Props> = ({ 
-  menuY, 
-  menuX, 
-  mode, 
-  onMergeCells, 
-  onSplitCell, 
-  onChangeCellTypeTo, 
-  onAlign, 
-  onInsertColLeft, 
-  onInsertColRight,
-  onRemoveCol,
-  onInsertRowAbove,
-  onInsertRowBelow,
-  onRemoveRow,
+export const CTXMenu: React.FC<Props> = ({
+  menuY,
+  menuX,
+  mode,
   selectedRowIndex,
   selectedColIndex,
   message,
 }) => {
+  const { 
+    mergeCells, 
+    splitCell, 
+    changeCellTypeTo, 
+    alignCell, 
+    insertColLeft, 
+    insertColRight, 
+    removeCol, 
+    insertRowAbove, 
+    insertRowBelow,
+    removeRow
+  } = useContext(TableContext)
+
   return (
     <ul
       className="st-table-menu"
@@ -62,46 +56,46 @@ export const CTXMenu: React.FC<Props> = ({
       {mode === 'cell' && (
         <>
           <li
-            onClick={onMergeCells}
+            onClick={mergeCells}
           >
             {message.mergeCells}
           </li>
           <li
-            onClick={onSplitCell}
+            onClick={splitCell}
           >
             {message.splitCell}
           </li>
           <li
             onClick={() => {
-              onChangeCellTypeTo('th')
+              changeCellTypeTo('th')
             }}
           >
             {message.changeToTh}
           </li>
           <li
             onClick={() => {
-              onChangeCellTypeTo('td')
+              changeCellTypeTo('td')
             }}
           >
             {message.changeToTd}
           </li>
           <li
             onClick={() => {
-              onAlign('left')
+              alignCell('left')
             }}
           >
             {message.alignLeft}
           </li>
           <li
             onClick={() => {
-              onAlign('center')
+              alignCell('center')
             }}
           >
             {message.alignCenter}
           </li>
           <li
             onClick={() => {
-              onAlign('right')
+              alignCell('right')
             }}
           >
             {message.alignRight}
@@ -112,21 +106,21 @@ export const CTXMenu: React.FC<Props> = ({
         <>
           <li
             onClick={() => {
-              onInsertColLeft(selectedRowIndex)
+              insertColLeft(selectedRowIndex)
             }}
           >
             {message.addColumnLeft}
           </li>
           <li
             onClick={() => {
-              onInsertColRight(selectedRowIndex)
+              insertColRight(selectedRowIndex)
             }}
           >
             {message.addColumnRight}
           </li>
           <li
             onClick={() => {
-              onRemoveCol(selectedRowIndex)
+              removeCol(selectedRowIndex)
             }}
           >
             {message.removeColumn}
@@ -137,21 +131,21 @@ export const CTXMenu: React.FC<Props> = ({
         <>
           <li
             onClick={() => {
-              onInsertRowAbove(selectedColIndex)
+              insertRowAbove(selectedColIndex)
             }}
           >
             {message.addRowTop}
           </li>
           <li
             onClick={() => {
-              onInsertRowBelow(selectedColIndex)
+              insertRowBelow(selectedColIndex)
             }}
           >
             {message.addRowBottom}
           </li>
           <li
             onClick={() => {
-              onRemoveRow(selectedColIndex)
+              removeRow(selectedColIndex)
             }}
           >
             {message.removeRow}

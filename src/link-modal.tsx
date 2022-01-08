@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react"
+import React, { useContext, useEffect, useState } from "react"
+import { TableContext } from "./table-context"
 
 type Props = {
   onClose: () => void
   isNewLink: boolean
   showTargetBlankUI: boolean
-  onInsertLink: (props: { linkUrl: string, linkLabel: string, linkTargetBlank: boolean }) => void
   linkLabel: string
   message: {
     addLinkTitle: string
@@ -22,9 +22,9 @@ export const LinkModal: React.FC<Props> = ({
   isNewLink, 
   showTargetBlankUI,
   message,
-  onInsertLink,
   linkLabel: defaultLinkLabel,
 }) => {
+  const { insertLink } = useContext(TableContext)
   const [linkUrl, setLinkUrl] = useState('')
   const [linkLabel, setLinkLabel] = useState('')
   const [linkTargetBlank, setLinkTargetBlank] = useState(false)
@@ -40,6 +40,10 @@ export const LinkModal: React.FC<Props> = ({
       setLinkTargetBlank(false)
     }
   }
+
+  const handleLinkAdd = React.useCallback(() => {
+    insertLink({ linkLabel, linkUrl, linkTargetBlank })
+  }, [linkLabel, linkUrl, linkTargetBlank])
 
   return (
     <div className="st-table-modal-wrap">
@@ -124,9 +128,7 @@ export const LinkModal: React.FC<Props> = ({
                       {isNewLink && (
                         <button
                           type="button"
-                          onClick={() => {
-                            onInsertLink({ linkLabel, linkUrl, linkTargetBlank })
-                          }}
+                          onClick={handleLinkAdd}
                           className="st-table-modal-btn"
                         >
                           <i className="st-table-modal-link-icon"></i>

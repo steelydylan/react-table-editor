@@ -114,3 +114,64 @@ export type DefaultProps = {
   },
   showTargetBlankUI: boolean,
 }
+
+export type Action =
+  { type: 'SET_MENU', showMenu: boolean } |
+  { type: 'SET_SPLITED', splited: boolean } |
+  { type: 'SET_MOUSEDOWN', mousedown: boolean } |
+  { type: 'SET_POINT', point: Point } |
+  { type: 'SET_SELECTED_ROW_NO', index: number } |
+  { type: 'SET_SELECTED_COL_NO', index: number } |
+  { type: 'SET_ROW', row: Row[] } |
+  { type: 'SET_MENU_X', menuX: number } |
+  { type: 'SET_MENU_Y', menuY: number } |
+  { type: 'SET_HISTORY', history: Row[][] } |
+  { type: 'SET_MODE', mode: 'col' | 'row' | 'cell' | null } |
+  { type: 'SET_SELECTED_TAGS', selectedTags: { className: string; tag: string }[] }
+
+export type State = {
+  mode: 'col' | 'row' | 'cell' | null
+  showMenu: boolean
+  splited: boolean
+  mousedown: boolean
+  point: { x: number; y: number; width: number; height: number; }
+  selectedRowNo: number
+  selectedColNo: number
+  row: Row[]
+  tableClass: string
+  history: Row[][]
+  tableResult: string
+  cellClass: string
+  menuX: number
+  menuY: number
+  selectedTags: Tag[]
+}
+
+export type TableContextType = {
+  state: State
+  undo: () => void
+  unselect: () => void
+  insertLink: (props: { linkUrl: string, linkLabel: string, linkTargetBlank: boolean }) => void
+  insertTag: (tag: string, className: string) => void
+  alignCell: (align: Align) => void
+  changeCellTypeTo: (type: 'td' | 'th') => void
+  splitCell: () => void
+  mergeCells: () => void
+  removeCol: (index: number) => void
+  selectCol: (index: number) => void
+  removeRow: (index: number) => void
+  selectRow: (index: number) => void
+  insertColLeft: (index: number) => void
+  insertColRight: (index: number) => void
+  insertRowAbove: (index: number) => void
+  insertRowBelow: (index: number) => void
+  contextmenu: (x: number, y: number) => void
+  getCellIndexByPos: (x: number, y: number) => { row: number; col: number; }
+  getCellByIndex: (x: number, y: number) => Element
+  getSelectedPoints: (rows: Row[]) => Point[]
+  getSelectedPoint: (rows: Row[]) => Point
+  getAllPoints: (rows: Row[]) => Point[]
+  getCellInfoByIndex: (x: number, y: number) => Point | false 
+  getElementByQuery: (query: string) => Element
+  dispatch: React.Dispatch<Action>
+}
