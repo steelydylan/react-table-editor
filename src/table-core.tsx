@@ -111,7 +111,7 @@ export const TableCore = React.memo(({
         </tr>
       </thead>
       <tbody>
-        {rows.map((item, i) => {
+        {rows.map((_item, i) => {
           return (
             <tr key={`row-${i}`}>
               {selectedColIndex !== i && (

@@ -10,7 +10,6 @@ const xssOption = {
 }
 
 type Props = {
-  tableClass: string
   rows: Row[]
   align: {
     default: Align
@@ -21,7 +20,7 @@ type Props = {
 }
 
 
-export const ResultHTML: React.FC<Props> = ({ tableClass, rows, align }) => {
+export const ResultHTML: React.FC<Props> = ({ rows, align }) => {
   const getStyleByAlign = (val: string) => {
     if (align.default === val) {
       return ''
@@ -30,7 +29,7 @@ export const ResultHTML: React.FC<Props> = ({ tableClass, rows, align }) => {
   }
 
   return (
-    <table className={tableClass}>
+    <table>
       <tbody>
         {rows.map((item, rowIndex) => {
           return (
