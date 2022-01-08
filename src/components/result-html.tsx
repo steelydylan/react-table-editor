@@ -1,7 +1,7 @@
 import clsx from "clsx"
 import React from "react"
 import xss from "xss"
-import { Align, Row } from "./types"
+import { Align, Row } from "../types"
 
 const xssOption = {
   whiteList: {
