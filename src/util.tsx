@@ -1,3 +1,10 @@
+import produce from "immer"
+import React from "react"
+import { renderToStaticMarkup } from "react-dom/server"
+import { ResultHTML } from "./components/result-html"
+import { State } from "./types"
+import { Align, Col, Point, Row, Tag } from "./types"
+
 export function before(el: HTMLElement, html: string) {
   el.insertAdjacentHTML('beforebegin', html)
 }
@@ -337,4 +344,338 @@ export function generateRandomId() {
       .toString(36)
       .substr(2, 9)
   )
+}
+
+export function renderHTML(rows: Row[], align: any) {
+  return (<ResultHTML
+    rows={rows}
+    align={align}
+  />)
+}
+
+export function getHtml(rows: Row[], align: any) {
+  let html = renderToStaticMarkup(renderHTML(rows, align))
+  html = html.replace(/&quot;/g, '"')
+  html = html.replace(/data-tmp="(.*?)"/g, '$1')
+  html = html.replace(/&lt;/g, '<')
+  html = html.replace(/&gt;/g, '>')
+  return html
+}
+
+export function parse(html: string, format = 'html') {
+  const rows: Row[] = []
+  const doc = parseHTML(html, true)
+  const trs = doc.querySelectorAll('tr')
+    ;[].forEach.call(trs, (tr: HTMLTableRowElement) => {
+      const row = {} as Row
+      const cols: Col[] = []
+      const cells = tr.querySelectorAll('th,td')
+      row.col = cols
+        ;[].forEach.call(cells, (cell: HTMLTableCellElement) => {
+          const col = {} as Col
+          const html = format === 'html' ? cell.innerHTML : cell.innerText
+          if (cell.tagName === 'TH') {
+            col.type = 'th'
+          } else {
+            col.type = 'td'
+          }
+          col.colspan = parseInt(cell.getAttribute('colspan') as string) || 1
+          col.rowspan = parseInt(cell.getAttribute('rowspan') as string) || 1
+          col.value = ''
+          if (html) {
+            col.value = html.replace(/{(.*?)}/g, '&lcub;$1&rcub;')
+            col.value = col.value.replace(/\\/g, '&#92;')
+          }
+          const classAttr = cell.getAttribute('class')
+          let cellClass = ''
+          if (classAttr) {
+            const classList = classAttr.split(/\s+/)
+            classList.forEach(item => {
+              const align = this.getAlignByStyle(item)
+              if (align) {
+                col.align = align
+              } else {
+                cellClass += ` ${item}`
+              }
+            })
+          }
+          col.cellClass = cellClass.substr(1)
+          cols.push(col)
+        })
+      rows.push(row)
+    })
+  return rows
+}
+
+export function getHighestRow(firstRow: Row) {
+  const arr: number[] = []
+  // const firstRow = this.state.row[0]
+  let i = 0
+  if (!firstRow) {
+    return arr
+  }
+  const row = firstRow.col
+  row.forEach(item => {
+    const length = item.colspan
+    for (let t = 0; t < length; t++) {
+      arr.push(i)
+      i++
+    }
+  })
+  return arr
+}
+
+export function getRowLength(cols: Col[]) {
+  let length = 0
+  cols.forEach(item => {
+    length += item.colspan
+  })
+  return length
+}
+
+export function getColLength(rows: Row[]) {
+  let length = 0
+  let rowspan = 0
+  rows.forEach(row => {
+    if (rowspan === 0) {
+      rowspan = row.col[0].rowspan
+      length += rowspan
+    }
+    rowspan--
+  })
+  return length
+}
+
+export function getTableLength(rows: Row[]) {
+  return {
+    x: getRowLength(rows[0].col),
+    y: getColLength(rows),
+  }
+}
+
+export function getLargePoint(...points: Point[]) {
+  const minXArr = []
+  const minYArr = []
+  const maxXArr = []
+  const maxYArr = []
+  for (let i = 0, n = points.length; i < n; i++) {
+    minXArr.push(points[i].x)
+    minYArr.push(points[i].y)
+    maxXArr.push(points[i].x + points[i].width)
+    maxYArr.push(points[i].y + points[i].height)
+  }
+  const minX = Math.min(...minXArr)
+  const minY = Math.min(...minYArr)
+  const maxX = Math.max(...maxXArr)
+  const maxY = Math.max(...maxYArr)
+  return { x: minX, y: minY, width: maxX - minX, height: maxY - minY }
+}
+
+export function hitTest(largePoint: Point, targetPoint: Point) {
+  if (
+    largePoint.x < targetPoint.x + targetPoint.width &&
+    targetPoint.x < largePoint.x + largePoint.width &&
+    largePoint.y < targetPoint.y + targetPoint.height &&
+    targetPoint.y < largePoint.y + largePoint.height
+  ) {
+    return true
+  }
+  return false
+}
+
+export function unselectCells(rows: Row[]) {
+  rows.forEach(row => {
+    if (!row || !row.col) {
+      return false
+    }
+    row.col.forEach(col => {
+      col.selected = false
+    })
+  })
+  return rows
+}
+
+export function removeCell (rows: Row[], cell: Col) {
+  for (let i = 0, n = rows.length; i < n; i++) {
+    const { col: cols } = rows[i]
+    for (let t = 0, m = cols.length; t < m; t++) {
+      const col = cols[t]
+      if (col === cell) {
+        cols.splice(t, 1)
+        t--
+        m--
+      }
+    }
+  }
+  return rows
+}
+
+export function removeSelectedCellExcept(rows: Row[], cell ?: Col) {
+  for (let i = 0, n = rows.length; i < n; i++) {
+    const { col: cols } = rows[i]
+    for (let t = 0, m = cols.length; t < m; t++) {
+      const col = cols[t]
+      if (col !== cell && col.selected) {
+        cols.splice(t, 1)
+        t--
+        m--
+      }
+    }
+  }
+  return rows
+}
+
+export function select(state: State, rowIndex: number, colIndex: number) {
+  state.row.forEach((item, i) => {
+    if (!item || !item.col) {
+      return
+    }
+    item.col.forEach((obj, t) => {
+      if (i !== rowIndex || t !== colIndex) {
+        obj.selected = false
+      }
+    })
+  })
+  if (!state.row[rowIndex].col[colIndex].selected) {
+    state.row[rowIndex].col[colIndex].selected = true
+  }
+  state.point = { x: colIndex, y: rowIndex, width: 0, height: 0 }
+  return state
+}
+
+export function parseText(text: string) {
+  const rows: Row[] = []
+  // replace newline codes inside double quotes to <br> tag
+  text = text.replace(/"(([\n\r\t]|.)*?)"/g, (match, str) => str.replace(/[\n\r]/g, '<br>'))
+  const splits = text.split(/\r\n|\n|\r/)
+  splits.forEach(split => {
+    const row = {} as Row
+    const cols: Col[] = []
+    row.col = cols
+    const cells = split.split(String.fromCharCode(9))
+    cells.forEach(cell => {
+      const obj = {} as Col
+      obj.type = 'td'
+      obj.colspan = 1
+      obj.rowspan = 1
+      obj.value = ''
+      if (cell) {
+        obj.value = cell
+      }
+      cols.push(obj)
+    })
+    rows.push(row)
+  })
+  return rows
+}
+
+export function toMarkdown(html: string) {
+  const table = parseHTML(html)
+  let ret = ''
+  const trs = table.querySelectorAll('tr')
+    ;[].forEach.call(trs, (tr, i) => {
+      ret += '| '
+      const children = tr.querySelectorAll('td,th')
+        ;[].forEach.call(children, child => {
+          ret += child.innerHTML
+          ret += ' | '
+        })
+      if (i === 0) {
+        ret += '\n| '
+          ;[].forEach.call(children, () => {
+            ret += '--- | '
+          })
+      }
+      ret += '\n'
+    })
+  return ret
+}
+
+export function getTable(rows: Row[], align: any) {
+  return getHtml(rows, align)
+    .replace(/ className=""/g, '')
+    .replace(/className="(.*)? "/g, 'className="$1"')
+}
+
+export function getMarkdown(rows: Row[], align: any) {
+  return toMarkdown(getHtml(rows, align))
+}
+
+export function putCaret(elem: HTMLElement) {
+  if (!elem) {
+    return
+  }
+  elem.focus()
+  if (typeof window.getSelection !== 'undefined' && typeof document.createRange !== 'undefined') {
+    const range = document.createRange()
+    range.selectNodeContents(elem)
+    range.collapse(false)
+    const sel = window.getSelection() as Selection
+    sel.removeAllRanges()
+    sel.addRange(range)
+  } else if (typeof document.body.createTextRange !== 'undefined') {
+    const textRange = document.body.createTextRange()
+    textRange.moveToElementText(elem)
+    textRange.collapse(false)
+    textRange.select()
+  }
+}
+
+export function insertRow(rows: Row[], rowIndex: number, newCols: Col[]) {
+  if (rows[rowIndex]) {
+    rows.splice(rowIndex, 0, { col: newCols })
+    return rows
+  } else if (rows.length === rowIndex) {
+    rows.push({ col: newCols })
+    return rows
+  }
+}
+
+export function insertCellAt(rows: Row[], rowIndex: number, colIndex: number, col: Col) {
+  if (rows[rowIndex] && rows[rowIndex].col) {
+    rows[rowIndex].col.splice(colIndex, 0, col)
+    return rows
+  }
+  return rows
+}
+
+export function replaceCellAt(rows: Row[], rowIndex: number, colIndex: number, col: Col) {
+  if (rows[rowIndex] && rows[rowIndex].col) {
+    rows[rowIndex].col[colIndex] = col
+    return rows
+  }
+  return rows
+}
+
+export function generateHistory(history: Row[][], rows: Row[]) {
+  return produce(history, history => {
+    history.push(rows)
+    return history
+  })
+}
+
+export function generateNewCell() {
+  return {
+    key: generateRandomId(),
+    type: 'td' as 'td' | 'th',
+    colspan: 1,
+    rowspan: 1,
+    value: '',
+    selected: false,
+    x: -1,
+    y: -1,
+    align: 'left' as Align,
+    mark: {
+      right: false,
+      left: false,
+      top: false,
+      bottom: false,
+    },
+  }
+}
+
+export function checkTag(selectedTags: Tag[], tag: string, className: string) {
+  return selectedTags.some(selectedTag => {
+    return selectedTag.tag === tag && selectedTag.className === className
+  })
 }
