@@ -6,7 +6,7 @@ import SvgMerge from './icons/Merge'
 import SvgSplit from './icons/Split'
 import SvgUndo from './icons/Undo'
 import { TableEditor } from './table-editor'
-import { Btn, DefaultProps, Point, Row } from './types'
+import { Btn, DefaultProps, Point, Row, Tag } from './types'
 
 type Action =
   { type: 'SET_MENU', showMenu: boolean } |
@@ -37,7 +37,7 @@ export type State = {
   cellClass: string
   menuX: number
   menuY: number
-  selectedTags: { className: string; tag: string }[]
+  selectedTags: Tag[]
 }
 
 const reducer = (state: State, action: Action) => {

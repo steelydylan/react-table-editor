@@ -23,6 +23,11 @@ export type Mark = {
   left: boolean
 }
 
+export type Tag = {
+  className: string; 
+  tag: string;
+}
+
 export type Col = {
   key: string
   colspan: number

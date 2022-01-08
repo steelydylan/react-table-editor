@@ -3,7 +3,7 @@ import React from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { ResultHTML } from "./result-html"
 import { State } from "./table-context"
-import { Align, Col, Point, Row } from "./types"
+import { Align, Col, Point, Row, Tag } from "./types"
 
 export function before(el: HTMLElement, html: string) {
   el.insertAdjacentHTML('beforebegin', html)
@@ -672,4 +672,10 @@ export function generateNewCell() {
       bottom: false,
     },
   }
+}
+
+export function checkTag(selectedTags: Tag[], tag: string, className: string) {
+  return selectedTags.some(selectedTag => {
+    return selectedTag.tag === tag && selectedTag.className === className
+  })
 }

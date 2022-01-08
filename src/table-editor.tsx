@@ -71,7 +71,6 @@ export const TableEditor = ({
     }
   }, [])
 
-
   const getElementByQuery = (query: string) => {
     if (tableRef.current) {
       return tableRef.current.querySelector(query)
@@ -209,18 +208,6 @@ export const TableEditor = ({
     dispatch({ type: 'SET_MENU_X', menuX: e.clientX })
     dispatch({ type: 'SET_MENU_Y', menuY: e.clientY })
   }
-
-  useEffect(() => {
-    const table = getElementByQuery('table') as HTMLTableElement
-    const inner = tableRef.current.parentNode as HTMLElement
-    if (table) {
-      inner.style.width = '9999px'
-      const tableWidth = table.offsetWidth
-      inner.style.width = `${tableWidth}px`
-    } else {
-      inner.style.width = 'auto'
-    }
-  })
 
   const undo = () => {
     const newHistory = [...produce(history, history => history)]
@@ -1213,12 +1200,6 @@ export const TableEditor = ({
     return stateRow
   }
 
-  const checkTag = (tag: string, className: string) => {
-    return selectedTags.some(selectedTag => {
-      return selectedTag.tag === tag && selectedTag.className === className
-    })
-  }
-
   const unwrapTag = (cell: HTMLElement, tag: string, className: string) => {
     const pos = util.getCaretPos(cell)
     let node = util.getElementBySelection()
@@ -1255,7 +1236,6 @@ export const TableEditor = ({
       onChange(util.getHtml(newRow, align))
     }
     dispatch({ type: 'SET_ROW', row: newRow })
-    // this.setState({ row })
   }
 
   const insertTag = (tag: string, className: string) => {
@@ -1270,7 +1250,7 @@ export const TableEditor = ({
     const index = getCellIndexByPos(point.x, point.y)
     const cell = getCellByIndex(index.col, index.row) as HTMLElement
     const selection = util.getSelection(cell)
-    if (checkTag(tag, className)) {
+    if (util.checkTag(selectedTags, tag, className)) {
       unwrapTag(cell, tag, className)
       return
     }

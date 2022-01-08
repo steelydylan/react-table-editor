@@ -60,10 +60,10 @@
 .st-table td,
 .st-table th {
 	text-align: left;
-	width: 100px;
 	white-space: nowrap;
 	background-color: #fff;
 	z-index: 0;
+	min-width: 100px;
 }
 
 .st-table-cell-inner {
@@ -546,3 +546,4 @@
   padding: 10px 5px;
   text-align: right;
 }
+
