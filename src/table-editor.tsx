@@ -532,7 +532,9 @@ export const TableEditor = ({
     dispatch({ type: 'SET_MENU_Y', menuY: newState.menuY })
     dispatch({ type: 'SET_ROW', row: newState.row })
     dispatch({ type: 'SET_SELECTED_TAGS', selectedTags: newState.selectedTags })
-    // this.setState(state)
+    dispatch({ type: 'SET_SELECTED_COL_NO', index: newState.selectedColNo })
+    dispatch({ type: 'SET_SELECTED_ROW_NO', index: newState.selectedRowNo })
+    dispatch({ type: 'SET_MODE', mode: newState.mode })
   }
 
   const copyTable = (e: React.ClipboardEvent<HTMLTableDataCellElement>) => {
@@ -1413,5 +1415,4 @@ export const TableEditor = ({
       {renderLinkModal()}
     </div>
   )
-
 }
