@@ -13,7 +13,6 @@ type Action =
   { type: 'SET_SPLITED', splited: boolean } |
   { type: 'SET_BEING_INPUT', beignInput: boolean } |
   { type: 'SET_MOUSEDOWN', mousedown: boolean } |
-  { type: 'SET_OPEN_LINK_MODAL', openLinkModal: boolean } |
   { type: 'SET_POINT', point: Point } |
   { type: 'SET_SELECTED_ROW_NO', index: number } |
   { type: 'SET_SELECTED_COL_NO', index: number } |
@@ -21,7 +20,8 @@ type Action =
   { type: 'SET_MENU_X', menuX: number } |
   { type: 'SET_MENU_Y', menuY: number } |
   { type: 'SET_HISTORY', history: Row[][] } |
-  { type: 'SET_MODE', mode: 'col' | 'row' | 'cell' | null }
+  { type: 'SET_MODE', mode: 'col' | 'row' | 'cell' | null } |
+  { type: 'SET_SELECTED_TAGS', selectedTags: { className: string; tag: string }[] }
 
 export type State = {
   mode: 'col' | 'row' | 'cell' | null
@@ -29,7 +29,6 @@ export type State = {
   splited: boolean
   beingInput: boolean
   mousedown: boolean
-  openLinkModal: boolean
   point: { x: number; y: number; width: number; height: number; }
   selectedRowNo: number
   selectedColNo: number
@@ -40,8 +39,6 @@ export type State = {
   cellClass: string
   menuX: number
   menuY: number
-  isNewLink: boolean
-  linkClassName: string
   selectedTags: { className: string; tag: string }[]
 }
 
@@ -66,11 +63,6 @@ const reducer = (state: State, action: Action) => {
       return {
         ...state,
         mousedown: action.mousedown
-      }
-    case 'SET_OPEN_LINK_MODAL':
-      return {
-        ...state,
-        openLinkModal: action.openLinkModal,
       }
     case 'SET_POINT':
       return {
@@ -112,6 +104,11 @@ const reducer = (state: State, action: Action) => {
         ...state,
         mode: action.mode,
       }
+    case 'SET_SELECTED_TAGS':
+      return {
+        ...state,
+        selectedTags: action.selectedTags,
+      }
     default:
       return state
   }
@@ -128,7 +125,6 @@ const initialState: State = {
   splited: false,
   beingInput: false,
   mousedown: false,
-  openLinkModal: false,
   point: { x: -1, y: -1, width: 0, height: 0 },
   selectedRowNo: -1,
   selectedColNo: -1,
@@ -137,10 +133,8 @@ const initialState: State = {
   history: [[]] as Row[][],
   tableResult: '',
   cellClass: '',
-  linkClassName: '',
   menuX: 0,
   menuY: 0,
-  isNewLink: false,
   selectedTags: [],
 }
 

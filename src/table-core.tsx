@@ -50,12 +50,10 @@ const shouldUpdate = (prevProps: Props, newProps: Props) => {
     onSelectCol: k,
     ...nextState
   } = newProps
-
   if (!shallowEqualObjects(currentState, nextState)) {
     return false
   }
   if (prevRow.length !== nextRow.length) {
-    console.log('aaa')
     return false
   }
   return prevRow.some((row, x) => {

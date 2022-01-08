@@ -1,6 +1,5 @@
-import React, { useContext, useEffect, useRef } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { renderToStaticMarkup } from 'react-dom/server'
 import produce from 'immer'
 import * as util from './util'
 import { acquireClipboardData, acquireText, toHtml } from './clipboard'
@@ -10,7 +9,6 @@ import { Align, Btn, CellClickEvent, Col, DefaultProps, Mark, Point, Row } from 
 import { Menu } from './menu'
 import { Table } from './table'
 import { State, TableContext } from './table-context'
-
 
 type Props = {
   html: string
@@ -37,10 +35,15 @@ export const TableEditor = ({
   const onPasting = useRef(false)
   const range = useRef<Range>(null)
   const { dispatch, state } = useContext(TableContext)
+  const [linkModalState, setLinkModalState] = useState({
+    linkClassName: '',
+    linkLabel: '',
+    isNewLink: false,
+    openLinkModal: false,
+  })
   const {
     mode,
     showMenu,
-    linkClassName,
     point,
     selectedRowNo,
     selectedColNo,
@@ -48,9 +51,7 @@ export const TableEditor = ({
     history,
     menuX,
     menuY,
-    isNewLink,
     selectedTags,
-    openLinkModal,
   } = state
 
   useEffect(() => {
@@ -215,13 +216,12 @@ export const TableEditor = ({
     const inner = tableRef.current.parentNode as HTMLElement
     const elem = getElementByQuery('.st-table-selected .st-table-editable') as HTMLDivElement
     const selectedPoints = getSelectedPoints(row)
-    if (elem && !showMenu && !openLinkModal && selectedPoints.length === 1) {
+    if (elem && !showMenu && !linkModalState.openLinkModal && selectedPoints.length === 1) {
       setTimeout(() => {
         util.putCaret(elem)
       }, 1)
     }
 
-    // for scroll
     if (table) {
       inner.style.width = '9999px'
       const tableWidth = table.offsetWidth
@@ -281,7 +281,7 @@ export const TableEditor = ({
     dispatch({ type: 'SET_MENU', showMenu: false })
     dispatch({ type: 'SET_MODE', mode: 'col' })
     dispatch({ type: 'SET_SELECTED_COL_NO', index: -1 })
-    dispatch({ type: 'SET_SELECTED_ROW_NO', index: -1 })
+    dispatch({ type: 'SET_SELECTED_ROW_NO', index: i })
     dispatch({ type: 'SET_ROW', row: newRow })
     contextmenu(e)
     // this.update()
@@ -533,7 +533,7 @@ export const TableEditor = ({
           const elem = getElementByQuery(
             '.st-table-selected .st-table-editable'
           ) as HTMLElement
-          util.putCaret(elem)
+          // util.putCaret(elem)
         }
       } else if (type === 'contextmenu') {
         e.preventDefault()
@@ -545,12 +545,17 @@ export const TableEditor = ({
         if (points.length !== 1 || !data.row[a].col[b].selected) {
           if (!data.beingInput) {
             util.select(data, a, b)
-            // this.update()
           }
         } // todo
       }
       return data
     })
+    dispatch({ type: 'SET_MOUSEDOWN', mousedown: newState.mousedown })
+    dispatch({ type: 'SET_MENU', showMenu: newState.showMenu })
+    dispatch({ type: 'SET_MENU_X', menuX: newState.menuX })
+    dispatch({ type: 'SET_MENU_Y', menuY: newState.menuY })
+    dispatch({ type: 'SET_ROW', row: newState.row })
+    dispatch({ type: 'SET_SELECTED_TAGS', selectedTags: newState.selectedTags })
     // this.setState(state)
   }
 
@@ -725,6 +730,7 @@ export const TableEditor = ({
       targetPoints.forEach(point => {
         const index = getCellIndexByPos(point.x, point.y)
         const cell = getCellByPos(data.row, point.x, point.y)
+        console.log(targetPoints)
         if (typeof index.row !== 'undefined' && typeof index.col !== 'undefined') {
           if (point.width + point.x - newpoint.x > 1) {
             cell.colspan = cell.colspan + 1
@@ -901,7 +907,8 @@ export const TableEditor = ({
     if (onChange) {
       onChange(util.getHtml(newState.row, align))
     }
-    // this.setState(state)
+    dispatch({ type: 'SET_ROW', row: newState.row })
+    dispatch({ type: 'SET_HISTORY', history: newState.history })
   }
 
   const isSelectedCellsRectangle = () => {
@@ -943,11 +950,9 @@ export const TableEditor = ({
     if (onChange) {
       onChange(util.getHtml(row, align))
     }
-    // this.setState({
-    //   showMenu: false,
-    //   row,
-    //   history: this.generateHistory(row),
-    // })
+    dispatch({ type: "SET_MENU", showMenu: false })
+    dispatch({ type: "SET_ROW", row })
+    dispatch({ type: "SET_HISTORY", history: generateHistory(row) })
   }
 
   const splitCell = () => {
@@ -1037,12 +1042,10 @@ export const TableEditor = ({
     if (onChange) {
       onChange(util.getHtml(newState.row, align))
     }
-    // this.setState({
-    //   ...state,
-    //   showMenu: false,
-    //   history: this.generateHistory(state.row),
-    //   splited: true,
-    // })
+    dispatch({ type: "SET_MENU", showMenu: false })
+    dispatch({ type: "SET_ROW", row: newState.row })
+    dispatch({ type: "SET_HISTORY", history: generateHistory(newState.row) })
+    dispatch({ type: "SET_SPLITED", splited: true })
   }
 
   const changeCellTypeTo = (type: 'td' | 'th') => {
@@ -1054,14 +1057,15 @@ export const TableEditor = ({
           }
         })
       })
-      data.showMenu = false
       data.history.push(produce(data.row, row => row))
       return data
     })
     if (onChange) {
       onChange(util.getHtml(state.row, align))
     }
-    // this.setState(state)
+    dispatch({ type: "SET_MENU", showMenu: false })
+    dispatch({ type: "SET_ROW", row: newState.row })
+    dispatch({ type: "SET_HISTORY", history: generateHistory(newState.row) })
   }
 
   const alignCell = (align: Align) => {
@@ -1074,29 +1078,13 @@ export const TableEditor = ({
         })
       })
       data.showMenu = false
-      data.history.push(data.row)
     })
     if (onChange) {
       onChange(util.getHtml(newState.row, align))
     }
-    // this.setState(state)
-  }
-
-  const getStyleByAlign = (val: string) => {
-    if (align.default === val) {
-      return ''
-    }
-    return align[val]
-  }
-
-  const getAlignByStyle = (style: string) => {
-    if (align.right === style) {
-      return 'right'
-    } else if (align.center === style) {
-      return 'center'
-    } else if (align.left === style) {
-      return 'left'
-    }
+    dispatch({ type: "SET_MENU", showMenu: false })
+    dispatch({ type: "SET_ROW", row: newState.row })
+    dispatch({ type: "SET_HISTORY", history: generateHistory(newState.row) })
   }
 
   const addRowAndCol = async(oldRows: Row[], points: Point) => {
@@ -1329,18 +1317,18 @@ export const TableEditor = ({
 
   const handleOpenLinkModal = ({ className, selection }: { className: string; selection: string }) => {
     range.current = util.saveSelection()
-    // this.setState({
-    //   isNewLink: true,
-    //   openLinkModal: true,
-    //   linkClassName: className,
-    //   linkLabel: `${selection}`,
-    // })
+    setLinkModalState({
+      openLinkModal: true,
+      linkClassName: className,
+      linkLabel: `${selection}`,
+      isNewLink: true
+    })
   }
 
   const insertLink = ({ linkUrl, linkLabel, linkTargetBlank }: { linkUrl: string, linkLabel: string, linkTargetBlank: boolean }) => {
     let classAttr = ''
-    if (linkClassName) {
-      classAttr = ` class="${linkClassName}"`
+    if (linkModalState.linkClassName) {
+      classAttr = ` class="${linkModalState.linkClassName}"`
     }
     const insertHtml = `<a href="${linkUrl}"${classAttr}${linkTargetBlank === true
       ? ` target="_blank" rel="${relAttrForTargetBlank}"`
@@ -1361,7 +1349,10 @@ export const TableEditor = ({
       onChange(util.getHtml(newRow, align))
     }
     dispatch({ type: 'SET_ROW', row: newRow })
-    dispatch({ type: 'SET_OPEN_LINK_MODAL', openLinkModal: false })
+    setLinkModalState({
+      ...linkModalState,
+      openLinkModal: false,
+    })
   }
 
   const renderCtxMenu = () => {
@@ -1392,17 +1383,19 @@ export const TableEditor = ({
   }
 
   const renderLinkModal = () => {
-    if (!modalRef.current || !openLinkModal) {
+    if (!modalRef.current || !linkModalState.openLinkModal) {
       return null
     }
-    console.log(openLinkModal)
     return createPortal(
       <LinkModal
-        isNewLink={isNewLink}
+        isNewLink={linkModalState.isNewLink}
         showTargetBlankUI={showTargetBlankUI}
         message={message}
         onClose={() => {
-          dispatch({ type: 'SET_OPEN_LINK_MODAL', openLinkModal: false })
+          setLinkModalState({
+            ...linkModalState,
+            openLinkModal: false,
+          })
         }}
         onInsertLink={insertLink}
       />,
